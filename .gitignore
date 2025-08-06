@@ -1,0 +1,41 @@
+
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Bb]uild[Ll]og.*
+*.dll
+*.exe
+*.app
+*.log
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# Others
+*.dbmdl
+*.pdb
+*.cache
+*.log
+*.vspscc
+*.vssscc
+*.scc
+
+# Tailwind or Node (if using)
+node_modules/
+dist/
+.env
+IoTMonitorApp.API/appsettings.json
+IoTMonitorApp.API/appsettings.Development.json
+
