@@ -18,14 +18,14 @@ const Login = () => {
         },
         body: JSON.stringify({ email, password })
       });
-
+      const data = await response.json();
       if (!response.ok) {
-        const data = await response.json();
+        console.log(data); // Log lỗi để debug
         setError(data.message || 'Login failed');
         return;
       }
 
-      const data = await response.json();
+      
 
       // Lưu token vào localStorage (nếu backend trả về token)
       localStorage.setItem('token', data.token);
@@ -41,7 +41,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-80">
-        <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Sign in</h2>
 
         <input
           type="email"
@@ -63,13 +63,13 @@ const Login = () => {
           type="submit"
           className="bg-blue-600 text-white w-full p-2 rounded hover:bg-blue-700"
         >
-          Login
+          Sign in
         </button>
 
         <p className="text-sm text-center mt-4">
           Don't have an account?{' '}
           <a href="/register" className="text-blue-600 underline">
-            Register
+            Sign up
           </a>
         </p>
       </form>
