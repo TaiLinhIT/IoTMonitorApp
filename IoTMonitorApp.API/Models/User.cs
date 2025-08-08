@@ -6,6 +6,8 @@ namespace IoTMonitorApp.API.Models
     {
         [Key]
         public int Id { get; set; }
+        public int RoleId { get; set; }
+        public DateTime AssignedDate { get; set; }
         public string? GoogleId { get; set; }
         [Required]
         public string Email { get; set; }
@@ -14,5 +16,6 @@ namespace IoTMonitorApp.API.Models
         public string Role { get; set; }
         public string? ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool IsDelete { get; set; }
     }
 }

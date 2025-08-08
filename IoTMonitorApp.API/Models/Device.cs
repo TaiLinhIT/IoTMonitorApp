@@ -1,7 +1,10 @@
-﻿namespace IoTMonitorApp.API.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace IoTMonitorApp.API.Models
 {
     public class Device
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
