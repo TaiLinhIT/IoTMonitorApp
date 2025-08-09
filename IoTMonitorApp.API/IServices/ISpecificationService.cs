@@ -4,10 +4,10 @@ namespace IoTMonitorApp.API.IServices
 {
     public interface ISpecificationService
     {
-        List<Specification> GetAll();
-        Specification GetSpecificationById(int id);
-        void AddSpecification(Specification specification);
-        string UpdateSpecification(Specification specification);
-        bool DeleteSpecification(int id);
+        Task<IEnumerable<Specification>> GetAllAsync();
+        Task<Specification> GetSpecificationByIdAsync(int id);
+        Task AddSpecificationAsync(Specification specification);
+        Task<string> UpdateSpecificationAsync(Specification specification);
+        Task<bool> DeleteSpecificationAsync(int id);
     }
 }

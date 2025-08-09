@@ -99,6 +99,12 @@ namespace IoTMonitorApp.API
             });
             #endregion
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IRoleService, RoleService>();
+            builder.Services.AddScoped<IBrandService, BrandService>();
+            builder.Services.AddScoped<ISpecificationService, SpecificationService>();
 
 
             #region Cấu hình Entity Framework core

@@ -1,6 +1,7 @@
 ﻿using IoTMonitorApp.API.Data;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace IoTMonitorApp.API.Services
 {
@@ -11,12 +12,14 @@ namespace IoTMonitorApp.API.Services
         {
             _dbContext = appDbContext;
         }
-        public void AddCategory(Category category)
+
+
+        public async Task AddCategoryAsync(Category category)
         {
             try
             {
-                _dbContext.Categories.Add(category);
-                _dbContext.SaveChanges();
+                await _dbContext.Categories.AddAsync(category);
+                await _dbContext.SaveChangesAsync();
                 Console.WriteLine("Add successful!");
             }
             catch (Exception ex)
@@ -26,13 +29,16 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public bool DeleteCategory(int id)
+
+        public async Task<bool> DeleteCategoryAsync(int id)
         {
             try
             {
-                var findCategory = _dbContext.Categories.FirstOrDefault(c => c.Id == id);
+                var findCategory = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id);
+                if (findCategory == null)
+                    return false;
                 findCategory.IsDelete = true;
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return true;
 
             }
@@ -44,17 +50,24 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public List<Category> GetAll()
+
+        public async Task<IEnumerable<Category>> GetAllAsync()
         {
-            var category = _dbContext.Categories.ToList();
+            var category = await _dbContext.Categories.ToListAsync();
             return category;
         }
 
-        public Category GetCategoryById(int id)
+
+        public async Task<Category> GetCategoryByIdAsync(int id)
         {
             try
             {
-                var findCategory = _dbContext.Categories.FirstOrDefault(x => x.Id == id);
+                var findCategory = await _dbContext.Categories.FirstOrDefaultAsync(x => x.Id == id);
+                if (findCategory == null)
+                {
+                    Console.WriteLine("Category not found");
+                    return new Category();
+                }
                 return findCategory;
 
             }
@@ -66,14 +79,16 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public string UpdateCategory(Category category)
+        public async Task<string> UpdateCategoryAsync(Category category)
         {
             try
             {
-                var findCategory = _dbContext.Categories.FirstOrDefault(x => x.Id == category.Id);
+                var findCategory = await _dbContext.Categories.FirstOrDefaultAsync(x => x.Id == category.Id);
+                if (findCategory == null)
+                    return "Category not found";
                 findCategory.UpdatedDate = DateTime.Now;
                 findCategory.Name = category.Name;
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return "Update successful";
             }
             catch (Exception ex)

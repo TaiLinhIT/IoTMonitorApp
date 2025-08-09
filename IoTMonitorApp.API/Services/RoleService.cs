@@ -1,6 +1,7 @@
 ﻿using IoTMonitorApp.API.Data;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace IoTMonitorApp.API.Services
 {
@@ -11,12 +12,14 @@ namespace IoTMonitorApp.API.Services
         {
             _dbContext = appDbContext;
         }
-        public void AddRole(Role role)
+
+
+        public async Task AddRoleAsync(Role role)
         {
             try
             {
-                _dbContext.Roles.Add(role);
-                _dbContext.SaveChanges();
+                await _dbContext.Roles.AddAsync(role);
+                await _dbContext.SaveChangesAsync();
                 Console.WriteLine("Add successful");
             }
             catch (Exception ex)
@@ -26,14 +29,17 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public bool DeleteRole(int id)
+
+        public async Task<bool> DeleteRoleAsync(int id)
         {
             try
             {
-                var findRole = _dbContext.Roles.FirstOrDefault(x => x.Id == id);
+                var findRole = await _dbContext.Roles.FirstOrDefaultAsync(x => x.Id == id);
+                if (findRole == null)
+                    return false;
                 findRole.IsDelete = true;
 
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -44,26 +50,31 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public List<Role> GetAll()
+
+        public async Task<IEnumerable<Role>> GetAllAsync()
         {
-            return _dbContext.Roles.ToList();
+            return await _dbContext.Roles.ToListAsync();
         }
 
-        public Role GetById(int id)
+
+        public async Task<Role> GetByIdAsync(int id)
         {
-            var findRole = _dbContext.Roles.FirstOrDefault(x => x.Id == id);
+            var findRole = await _dbContext.Roles.FirstOrDefaultAsync(x => x.Id == id);
             return findRole;
         }
 
-        public string UpdateRole(Role role)
+
+        public async Task<string> UpdateRoleAsync(Role role)
         {
             try
             {
-                var findRole = _dbContext.Roles.FirstOrDefault(x => x.Id == role.Id);
+                var findRole = await _dbContext.Roles.FirstOrDefaultAsync(x => x.Id == role.Id);
+                if (findRole == null)
+                    return "Role not found";
                 findRole.UpdatedDate = DateTime.Now;
                 findRole.Description = role.Description;
                 findRole.Name = role.Name;
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return "Update successful";
             }
             catch (Exception ex)
@@ -71,7 +82,6 @@ namespace IoTMonitorApp.API.Services
 
                 return ex.Message;
             }
-
         }
     }
 }

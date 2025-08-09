@@ -4,10 +4,10 @@ namespace IoTMonitorApp.API.IServices
 {
     public interface ICategoryService
     {
-        List<Category> GetAll();
-        Category GetCategoryById(int id);
-        void AddCategory(Category category);
-        string UpdateCategory(Category category);
-        bool DeleteCategory(int id);
+        Task<IEnumerable<Category>> GetAllAsync();
+        Task<Category> GetCategoryByIdAsync(int id);
+        Task AddCategoryAsync(Category category);
+        Task<string> UpdateCategoryAsync(Category category);
+        Task<bool> DeleteCategoryAsync(int id);
     }
 }

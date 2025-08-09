@@ -35,7 +35,7 @@ namespace IoTMonitorApp.API.Services
                 Email = dto.Email,
                 FullName = dto.FullName,
                 Role = "User",
-                CreatedAt = DateTime.UtcNow,
+                CreatedDate = DateTime.UtcNow,
                 ImageUrl = null,
                 GoogleId = null
 
@@ -88,7 +88,7 @@ namespace IoTMonitorApp.API.Services
                 {
                     Email = email,
                     FullName = name,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedDate = DateTime.UtcNow
                 };
 
                 _dbContext.Users.Add(user);

@@ -4,10 +4,10 @@ namespace IoTMonitorApp.API.IServices
 {
     public interface IProductService
     {
-        List<Product> GetAll();
-        Product GetById(Guid id);
-        string AddProudct(Product product);
-        string UpdateProduct(Product product);
-        string DeleteProduct(Guid id);
+        Task<IEnumerable<Product>> GetAllAsync();
+        Task<Product> GetByIdAsync(Guid id);
+        Task<string> AddProudctAsync(Product product);
+        Task<string> UpdateProductAsync(Product product);
+        Task<string> DeleteProductAsync(Guid id);
     }
 }

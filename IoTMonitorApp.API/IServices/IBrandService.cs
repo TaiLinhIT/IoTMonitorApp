@@ -4,10 +4,10 @@ namespace IoTMonitorApp.API.IServices
 {
     public interface IBrandService
     {
-        List<Brand> GetAll();
-        Brand GetBrandyById(int id);
-        void AddBrand(Brand brand);
-        string UpdateBrand(Brand brand);
-        bool DeleteBrand(int id);
+        Task<IEnumerable<Brand>> GetAllAsync();
+        Task<Brand> GetBrandyByIdAsync(int id);
+        Task AddBrandAsync(Brand brand);
+        Task<string> UpdateBrandAsync(Brand brand);
+        Task<bool> DeleteBrandAsync(int id);
     }
 }

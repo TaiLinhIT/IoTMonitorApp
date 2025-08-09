@@ -1,6 +1,7 @@
 ﻿using IoTMonitorApp.API.Data;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace IoTMonitorApp.API.Services
 {
@@ -11,12 +12,14 @@ namespace IoTMonitorApp.API.Services
         {
             _dbContext = appDbContext;
         }
-        public string AddProudct(Product product)
+
+
+        public async Task<string> AddProudctAsync(Product product)
         {
             try
             {
-                _dbContext.Products.Add(product);
-                _dbContext.SaveChanges();
+                await _dbContext.Products.AddAsync(product);
+                await _dbContext.SaveChangesAsync();
                 return "Add successful";
 
             }
@@ -28,17 +31,18 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public string DeleteProduct(Guid id)
+
+        public async Task<string> DeleteProductAsync(Guid id)
         {
             try
             {
-                var findProduct = _dbContext.Products.FirstOrDefault(x => x.Id == id);
+                var findProduct = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
                 if (findProduct == null)
                     return "Not found product";
                 if (findProduct != null)
                 {
                     findProduct.IsDelete = true;
-                    _dbContext.SaveChanges();
+                    await _dbContext.SaveChangesAsync();
                     return "Delete successful";
                 }
                 return "Delete successful";
@@ -50,11 +54,11 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public List<Product> GetAll()
+        public async Task<IEnumerable<Product>> GetAllAsync()
         {
             try
             {
-                return _dbContext.Products.ToList();
+                return await _dbContext.Products.ToListAsync();
 
             }
             catch (Exception ex)
@@ -65,11 +69,16 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public Product GetById(Guid id)
+        public async Task<Product> GetByIdAsync(Guid id)
         {
             try
             {
-                var findProduct = _dbContext.Products.FirstOrDefault(x => x.Id == id);
+                var findProduct = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
+                if (findProduct == null)
+                {
+                    Console.WriteLine("Product not found");
+                    return new Product();
+                }
                 return findProduct;
             }
             catch (Exception ex)
@@ -81,18 +90,21 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public string UpdateProduct(Product product)
+
+
+        public async Task<string> UpdateProductAsync(Product product)
         {
             try
             {
-                var findProduct = _dbContext.Products.FirstOrDefault(x => x.Id == product.Id);
+                var findProduct = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == product.Id);
+                if (findProduct == null)
+                    return "Product not found";
                 findProduct.BrandId = product.BrandId;
                 findProduct.Name = product.Name;
                 findProduct.CategoryId = product.CategoryId;
                 findProduct.UpdatedDate = DateTime.Now;
                 findProduct.SpecificationsId = product.SpecificationsId;
-                _dbContext.Products.Update(findProduct);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return "Update successful!";
 
             }

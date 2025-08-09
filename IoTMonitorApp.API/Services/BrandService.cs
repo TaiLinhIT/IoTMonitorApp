@@ -1,6 +1,7 @@
 ﻿using IoTMonitorApp.API.Data;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace IoTMonitorApp.API.Services
 {
@@ -11,12 +12,14 @@ namespace IoTMonitorApp.API.Services
         {
             _dbContext = appDbContext;
         }
-        public void AddBrand(Brand brand)
+
+
+        public async Task AddBrandAsync(Brand brand)
         {
             try
             {
-                _dbContext.Brands.Add(brand);
-                _dbContext.SaveChanges();
+                await _dbContext.Brands.AddAsync(brand);
+                await _dbContext.SaveChangesAsync();
                 Console.WriteLine("Add successful!");
             }
             catch (Exception ex)
@@ -26,11 +29,14 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public bool DeleteBrand(int id)
+
+        public async Task<bool> DeleteBrandAsync(int id)
         {
             try
             {
-                var findBrand = _dbContext.Brands.FirstOrDefault(b => b.Id == id);
+                var findBrand = await _dbContext.Brands.FirstOrDefaultAsync(b => b.Id == id);
+                if (findBrand == null)
+                    return false;
                 findBrand.IsDelete = true;
                 return true;
             }
@@ -42,16 +48,18 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public List<Brand> GetAll()
+
+        public async Task<IEnumerable<Brand>> GetAllAsync()
         {
-            return _dbContext.Brands.ToList();
+            return await _dbContext.Brands.ToListAsync();
         }
 
-        public Brand GetBrandyById(int id)
+
+        public async Task<Brand> GetBrandyByIdAsync(int id)
         {
             try
             {
-                var findBrand = _dbContext.Brands.FirstOrDefault(b => b.Id == id);
+                var findBrand = await _dbContext.Brands.FirstOrDefaultAsync(b => b.Id == id);
                 return findBrand;
             }
             catch (Exception ex)
@@ -61,14 +69,17 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public string UpdateBrand(Brand brand)
+
+        public async Task<string> UpdateBrandAsync(Brand brand)
         {
             try
             {
-                var findBrand = _dbContext.Brands.FirstOrDefault(b => b.Id == brand.Id);
+                var findBrand = await _dbContext.Brands.FirstOrDefaultAsync(b => b.Id == brand.Id);
+                if (findBrand == null)
+                    return "Brand not found";
                 findBrand.UpdatedDate = DateTime.Now;
                 findBrand.Name = brand.Name;
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return "Update successful";
             }
             catch (Exception ex)

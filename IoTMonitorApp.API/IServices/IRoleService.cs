@@ -4,10 +4,10 @@ namespace IoTMonitorApp.API.IServices
 {
     public interface IRoleService
     {
-        List<Role> GetAll();
-        Role GetById(int id);
-        void AddRole(Role role);
-        string UpdateRole(Role role);
-        bool DeleteRole(int id);
+        Task<IEnumerable<Role>> GetAllAsync();
+        Task<Role> GetByIdAsync(int id);
+        Task AddRoleAsync(Role role);
+        Task<string> UpdateRoleAsync(Role role);
+        Task<bool> DeleteRoleAsync(int id);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using IoTMonitorApp.API.Data;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace IoTMonitorApp.API.Services
 {
@@ -11,12 +12,14 @@ namespace IoTMonitorApp.API.Services
         {
             _dbContext = appDbContext;
         }
-        public void AddSpecification(Specification specification)
+
+
+        public async Task AddSpecificationAsync(Specification specification)
         {
             try
             {
-                _dbContext.Specifications.Add(specification);
-                _dbContext.SaveChanges();
+                await _dbContext.Specifications.AddAsync(specification);
+                await _dbContext.SaveChangesAsync();
                 Console.WriteLine("Add successful!");
             }
             catch (Exception ex)
@@ -26,13 +29,15 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public bool DeleteSpecification(int id)
+        public async Task<bool> DeleteSpecificationAsync(int id)
         {
             try
             {
-                var findSpecification = _dbContext.Specifications.FirstOrDefault(x => x.Id == id);
+                var findSpecification = await _dbContext.Specifications.FirstOrDefaultAsync(x => x.Id == id);
+                if (findSpecification == null)
+                    return false;
                 findSpecification.IsDelete = true;
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -43,16 +48,19 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public List<Specification> GetAll()
+        public async Task<IEnumerable<Specification>> GetAllAsync()
         {
-            return _dbContext.Specifications.ToList();
+            return await _dbContext.Specifications.ToListAsync();
         }
 
-        public Specification GetSpecificationById(int id)
+
+        public async Task<Specification> GetSpecificationByIdAsync(int id)
         {
             try
             {
-                var findSpecification = _dbContext.Specifications.FirstOrDefault(x => x.Id == id);
+                var findSpecification = await _dbContext.Specifications.FirstOrDefaultAsync(x => x.Id == id);
+                if (findSpecification == null)
+                    return new Specification();
                 return findSpecification;
 
             }
@@ -64,18 +72,21 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public string UpdateSpecification(Specification specification)
+
+        public async Task<string> UpdateSpecificationAsync(Specification specification)
         {
             try
             {
-                var findSpecification = _dbContext.Specifications.FirstOrDefault(x => x.Id == specification.Id);
+                var findSpecification = await _dbContext.Specifications.FirstOrDefaultAsync(x => x.Id == specification.Id);
+                if (findSpecification == null)
+                    return "Not found specification";
                 findSpecification.UpdatedDate = specification.UpdatedDate;
                 findSpecification.SizeDisplay = specification.SizeDisplay;
                 findSpecification.Color = specification.Color;
                 findSpecification.Material = specification.Material;
                 findSpecification.Battery = specification.Battery;
                 findSpecification.Storage = specification.Storage;
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return "Update successful";
             }
             catch (Exception ex)
@@ -83,7 +94,6 @@ namespace IoTMonitorApp.API.Services
 
                 return ex.Message;
             }
-
         }
     }
 }
