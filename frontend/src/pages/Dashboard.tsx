@@ -96,7 +96,30 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
-      
+      {/*popular*/}
+      <div className="popular">
+        <div className="main-content">
+          <div className="popular-top">
+            <div className="info">
+              <h2 className="heading"></h2>
+              <p className="desc"></p>
+            </div>
+            <div className="controls">
+              <button className="control-btn">
+                <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 1L1 7L7 13" stroke="#FFB900" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button className="control-btn">
+                <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L7 7L1 13" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
   </main>
   );
 };
