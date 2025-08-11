@@ -1,5 +1,5 @@
-﻿using IoTMonitorApp.API.IServices;
-using IoTMonitorApp.API.Models;
+﻿using IoTMonitorApp.API.Dto;
+using IoTMonitorApp.API.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IoTMonitorApp.API.Controllers
@@ -38,14 +38,45 @@ namespace IoTMonitorApp.API.Controllers
             return Ok(brand);
         }
         [HttpPost]
-        public async Task<IActionResult> AddBrand([FromBody] Brand brand)
+        public async Task<IActionResult> AddBrand([FromBody] BrandDto brand)
         {
             if (brand == null)
             {
                 return BadRequest("Brand cannot be null");
             }
             await _brandService.AddBrandAsync(brand);
-            return CreatedAtAction(nameof(GetBrandById), new { id = brand.Id }, brand);
+            return CreatedAtAction(nameof(GetBrandById), brand);
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBrand(int id, [FromBody] BrandDto dto)
+        {
+            try
+            {
+                var find = await _brandService.UpdateBrandAsync(id, dto);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error updating brand: " + ex.Message);
+            }
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBrand(int id)
+        {
+            try
+            {
+                var isDeleted = await _brandService.DeleteBrandAsync(id);
+                if (!isDeleted)
+                {
+                    return NotFound($"Brand with ID {id} not found.");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error deleting brand: " + ex.Message);
+            }
+        }
+
     }
 }

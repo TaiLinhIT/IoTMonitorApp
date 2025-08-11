@@ -106,6 +106,8 @@ namespace IoTMonitorApp.API
             builder.Services.AddScoped<IBrandService, BrandService>();
             builder.Services.AddScoped<ISpecificationService, SpecificationService>();
 
+            // Đăng ký AutoMapper, tìm tất cả Profiles trong assembly hiện tại
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             #region Cấu hình Entity Framework core
 
@@ -124,10 +126,21 @@ namespace IoTMonitorApp.API
 
             #endregion
 
+
+            // Đăng ký Swagger
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
+
             var app = builder.Build();
             // 2. Áp dụng CORS
             app.UseCors("AllowLocalhost5173");
-
+            // Chỉ bật swagger ở môi trường development
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             app.UseHttpsRedirection();// chuyển hướng HTTP sang HTTPS
 

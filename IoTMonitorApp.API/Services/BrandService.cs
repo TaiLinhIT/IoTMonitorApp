@@ -1,4 +1,5 @@
 ﻿using IoTMonitorApp.API.Data;
+using IoTMonitorApp.API.Dto;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,18 @@ namespace IoTMonitorApp.API.Services
         }
 
 
-        public async Task AddBrandAsync(Brand brand)
+        public async Task AddBrandAsync(BrandDto brand)
         {
             try
             {
-                await _dbContext.Brands.AddAsync(brand);
+                var dto = new Brand
+                {
+                    Name = brand.Name,
+                    CreatedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    IsDelete = false
+                };
+                await _dbContext.Brands.AddAsync(dto);
                 await _dbContext.SaveChangesAsync();
                 Console.WriteLine("Add successful!");
             }
@@ -69,16 +77,15 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-
-        public async Task<string> UpdateBrandAsync(Brand brand)
+        public async Task<string> UpdateBrandAsync(int id, BrandDto dto)
         {
             try
             {
-                var findBrand = await _dbContext.Brands.FirstOrDefaultAsync(b => b.Id == brand.Id);
+                var findBrand = await _dbContext.Brands.FirstOrDefaultAsync(b => b.Id == id);
                 if (findBrand == null)
                     return "Brand not found";
                 findBrand.UpdatedDate = DateTime.Now;
-                findBrand.Name = brand.Name;
+                findBrand.Name = dto.Name;
                 await _dbContext.SaveChangesAsync();
                 return "Update successful";
             }
@@ -87,6 +94,11 @@ namespace IoTMonitorApp.API.Services
 
                 return ex.Message;
             }
+        }
+
+        Task<IEnumerable<BrandDto>> IBrandService.GetAllAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

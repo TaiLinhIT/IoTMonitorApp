@@ -1,13 +1,13 @@
-﻿using IoTMonitorApp.API.Models;
+﻿using IoTMonitorApp.API.Dto.Specification;
 
 namespace IoTMonitorApp.API.IServices
 {
     public interface ISpecificationService
     {
-        Task<IEnumerable<Specification>> GetAllAsync();
-        Task<Specification> GetSpecificationByIdAsync(int id);
-        Task AddSpecificationAsync(Specification specification);
-        Task<string> UpdateSpecificationAsync(Specification specification);
+        Task<IEnumerable<SpecificationDto>> GetAllAsync();
+        Task<SpecificationDto> GetSpecificationByIdAsync(int id);
+        Task AddSpecificationAsync(SpecificationDto dto);
+        Task<string> UpdateSpecificationAsync(SpecificationDto dto);
         Task<bool> DeleteSpecificationAsync(int id);
     }
 }

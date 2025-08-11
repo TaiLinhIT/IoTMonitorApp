@@ -1,13 +1,14 @@
-﻿using IoTMonitorApp.API.Models;
+﻿using IoTMonitorApp.API.Dto.Proudct;
 
 namespace IoTMonitorApp.API.IServices
 {
     public interface IProductService
     {
-        Task<IEnumerable<Product>> GetAllAsync();
-        Task<Product> GetByIdAsync(Guid id);
-        Task<string> AddProudctAsync(Product product);
-        Task<string> UpdateProductAsync(Product product);
-        Task<string> DeleteProductAsync(Guid id);
+        Task<IEnumerable<ProductDto>> GetAllAsync();
+        Task<ProductDto> GetByIdAsync(Guid id);
+        Task<ProductDto> CreateAsync(CreateProductDto dto);
+        Task<bool> UpdateAsync(UpdateProductDto dto);
+        Task<bool> DeleteAsync(Guid id);
     }
+
 }

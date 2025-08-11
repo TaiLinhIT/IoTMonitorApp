@@ -1,4 +1,5 @@
 ﻿using IoTMonitorApp.API.Data;
+using IoTMonitorApp.API.Dto.Proudct;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,111 +9,109 @@ namespace IoTMonitorApp.API.Services
     public class ProductService : IProductService
     {
         private readonly AppDbContext _dbContext;
-        public ProductService(AppDbContext appDbContext)
+
+        public ProductService(AppDbContext dbContext)
         {
-            _dbContext = appDbContext;
+            _dbContext = dbContext;
         }
 
-
-        public async Task<string> AddProudctAsync(Product product)
+        public async Task<IEnumerable<ProductDto>> GetAllAsync()
         {
-            try
-            {
-                await _dbContext.Products.AddAsync(product);
-                await _dbContext.SaveChangesAsync();
-                return "Add successful";
+            var products = await _dbContext.Products
+                .AsNoTracking()
+                .Where(p => !p.IsDelete)
+                .ToListAsync();
 
-            }
-            catch (Exception ex)
+            return products.Select(p => new ProductDto
             {
-
-                Console.WriteLine(ex.Message);
-                return "Add fail";
-            }
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                BrandId = p.BrandId,
+                CategoryId = p.CategoryId,
+                UserId = p.UserId,
+                SpecificationsId = p.SpecificationsId,
+                CreatedDate = p.CreatedDate
+            });
         }
 
-
-        public async Task<string> DeleteProductAsync(Guid id)
+        public async Task<ProductDto> GetByIdAsync(Guid id)
         {
-            try
+            var p = await _dbContext.Products
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id && !x.IsDelete);
+
+            if (p == null) return null;
+
+            return new ProductDto
             {
-                var findProduct = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
-                if (findProduct == null)
-                    return "Not found product";
-                if (findProduct != null)
-                {
-                    findProduct.IsDelete = true;
-                    await _dbContext.SaveChangesAsync();
-                    return "Delete successful";
-                }
-                return "Delete successful";
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return "Delete fail";
-            }
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                BrandId = p.BrandId,
+                CategoryId = p.CategoryId,
+                UserId = p.UserId,
+                SpecificationsId = p.SpecificationsId,
+                CreatedDate = p.CreatedDate
+            };
         }
 
-        public async Task<IEnumerable<Product>> GetAllAsync()
+        public async Task<ProductDto> CreateAsync(CreateProductDto dto)
         {
-            try
+            var product = new Product
             {
-                return await _dbContext.Products.ToListAsync();
+                Id = Guid.NewGuid(),
+                Name = dto.Name,
+                BrandId = dto.BrandId,
+                CategoryId = dto.CategoryId,
+                UserId = dto.UserId,
+                SpecificationsId = dto.SpecificationsId,
+                CreatedDate = DateTime.UtcNow,
+                IsDelete = false
+            };
 
-            }
-            catch (Exception ex)
+            _dbContext.Products.Add(product);
+            await _dbContext.SaveChangesAsync();
+
+            return new ProductDto
             {
-
-                Console.WriteLine(ex.Message);
-                return new List<Product>();
-            }
+                Id = product.Id,
+                Name = product.Name,
+                Slug = product.Slug,
+                BrandId = product.BrandId,
+                CategoryId = product.CategoryId,
+                UserId = product.UserId,
+                SpecificationsId = product.SpecificationsId,
+                CreatedDate = product.CreatedDate
+            };
         }
 
-        public async Task<Product> GetByIdAsync(Guid id)
+        public async Task<bool> UpdateAsync(UpdateProductDto dto)
         {
-            try
-            {
-                var findProduct = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
-                if (findProduct == null)
-                {
-                    Console.WriteLine("Product not found");
-                    return new Product();
-                }
-                return findProduct;
-            }
-            catch (Exception ex)
-            {
+            var product = await _dbContext.Products.FindAsync(dto.Id);
+            if (product == null || product.IsDelete) return false;
 
-                Console.WriteLine(ex.Message);
-                Product product = new Product();
-                return product;
-            }
+            product.Name = dto.Name;
+            product.BrandId = dto.BrandId;
+            product.CategoryId = dto.CategoryId;
+            product.UserId = dto.UserId;
+            product.SpecificationsId = dto.SpecificationsId;
+            product.UpdatedDate = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
 
-
-
-        public async Task<string> UpdateProductAsync(Product product)
+        public async Task<bool> DeleteAsync(Guid id)
         {
-            try
-            {
-                var findProduct = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == product.Id);
-                if (findProduct == null)
-                    return "Product not found";
-                findProduct.BrandId = product.BrandId;
-                findProduct.Name = product.Name;
-                findProduct.CategoryId = product.CategoryId;
-                findProduct.UpdatedDate = DateTime.Now;
-                findProduct.SpecificationsId = product.SpecificationsId;
-                await _dbContext.SaveChangesAsync();
-                return "Update successful!";
+            var product = await _dbContext.Products.FindAsync(id);
+            if (product == null || product.IsDelete) return false;
 
-            }
-            catch (Exception ex)
-            {
+            product.IsDelete = true;
+            product.UpdatedDate = DateTime.UtcNow;
 
-                return "Update fail " + ex.Message;
-            }
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }
