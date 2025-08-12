@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TypeGen.Core.TypeAnnotations;
 
 namespace IoTMonitorApp.API.Models
 {
+    [ExportTsClass]
     public class User : BaseEntity
     {
         [Key]

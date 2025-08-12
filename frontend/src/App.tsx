@@ -14,6 +14,9 @@ import PageNotFound from "./pages/PageNotFound";
 import PrivateRoute from "./components/PrivateRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 
+// 🆕 Import thêm ProductList
+import ProductList from "./Features/Product/ProductList";
+
 // ⚙️ Cấu hình router với future flags
 const router = createBrowserRouter(
   [
@@ -39,6 +42,17 @@ const router = createBrowserRouter(
         <ErrorBoundary>
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        </ErrorBoundary>
+      ),
+    },
+    // 🆕 Route mới cho ProductList
+    {
+      path: "/products",
+      element: (
+        <ErrorBoundary>
+          <PrivateRoute>
+            <ProductList />
           </PrivateRoute>
         </ErrorBoundary>
       ),

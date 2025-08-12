@@ -105,6 +105,13 @@ namespace IoTMonitorApp.API
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IBrandService, BrandService>();
             builder.Services.AddScoped<ISpecificationService, SpecificationService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<ICartItemService, CartItemService>();
+            builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+            builder.Services.AddScoped<IShipmentService, ShipmentService>();
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
+
 
             // Đăng ký AutoMapper, tìm tất cả Profiles trong assembly hiện tại
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

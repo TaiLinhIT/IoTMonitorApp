@@ -1,5 +1,8 @@
-﻿namespace IoTMonitorApp.API.Models
+﻿using TypeGen.Core.TypeAnnotations;
+
+namespace IoTMonitorApp.API.Models
 {
+    [ExportTsClass]
     public class Shipment : BaseEntity
     {
         public int Id { get; set; }
