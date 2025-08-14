@@ -1,12 +1,12 @@
-// PrivateRoute.tsx
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+// src/components/PrivateRoute.tsx
+import React from "react";
+import { Navigate } from "react-router-dom";
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("accessToken");
 
   if (!token) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;

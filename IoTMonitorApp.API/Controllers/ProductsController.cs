@@ -6,16 +6,16 @@ namespace IoTMonitorApp.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
 
-        public ProductController(IProductService productService)
+        public ProductsController(IProductService productService)
         {
             _productService = productService;
         }
 
-        // GET: api/Product
+        // GET: api/Products
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -37,7 +37,7 @@ namespace IoTMonitorApp.API.Controllers
         public async Task<IActionResult> Create(CreateProductDto dto)
         {
             var newProduct = await _productService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = newProduct.Id }, newProduct);
+            return CreatedAtAction(nameof(GetById), new { newProduct });
             // 201 Created + link GET
         }
 

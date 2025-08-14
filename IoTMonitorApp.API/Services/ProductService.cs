@@ -17,46 +17,50 @@ namespace IoTMonitorApp.API.Services
 
         public async Task<IEnumerable<ProductDto>> GetAllAsync()
         {
-            var products = await _dbContext.Products
-                .AsNoTracking()
-                .Where(p => !p.IsDelete)
-                .ToListAsync();
+            var products = await (from p in _dbContext.Products
+                                  join b in _dbContext.Brands on p.BrandId equals b.Id
+                                  join c in _dbContext.Categories on p.CategoryId equals c.Id
+                                  join s in _dbContext.Specifications on p.SpecificationsId equals s.Id
+                                  where !p.IsDelete
+                                  select new ProductDto
+                                  {
+                                      Id = p.Id,
+                                      Name = p.Name,
+                                      Slug = p.Slug,
+                                      BrandName = b.Name,
+                                      CategoryName = c.Name,
+                                      SpecificationsName = s.Material,
+                                      Price = p.Price,
+                                      CreatedDate = p.CreatedDate
+                                  }).ToListAsync();
 
-            return products.Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Slug = p.Slug,
-                BrandId = p.BrandId,
-                CategoryId = p.CategoryId,
-                UserId = p.UserId,
-                SpecificationsId = p.SpecificationsId,
-                CreatedDate = p.CreatedDate
-            });
+            return products;
         }
 
         public async Task<ProductDto> GetByIdAsync(Guid id)
         {
-            var p = await _dbContext.Products
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id && !x.IsDelete);
+            var Findproduct = await (from p in _dbContext.Products
+                                     join b in _dbContext.Brands on p.BrandId equals b.Id
+                                     join c in _dbContext.Categories on p.CategoryId equals c.Id
+                                     join s in _dbContext.Specifications on p.SpecificationsId equals s.Id
+                                     where p.Id == id && !p.IsDelete
+                                     select new ProductDto
+                                     {
+                                         Id = p.Id,
+                                         Name = p.Name,
+                                         Slug = p.Slug,
+                                         BrandName = b.Name,
+                                         CategoryName = c.Name,
+                                         SpecificationsName = s.Material,
+                                         CreatedDate = p.CreatedDate
+                                     }).FirstOrDefaultAsync();
 
-            if (p == null) return null;
+            if (Findproduct == null) return null;
 
-            return new ProductDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Slug = p.Slug,
-                BrandId = p.BrandId,
-                CategoryId = p.CategoryId,
-                UserId = p.UserId,
-                SpecificationsId = p.SpecificationsId,
-                CreatedDate = p.CreatedDate
-            };
+            return Findproduct;
         }
 
-        public async Task<ProductDto> CreateAsync(CreateProductDto dto)
+        public async Task<CreateProductDto> CreateAsync(CreateProductDto dto)
         {
             var product = new Product
             {
@@ -73,17 +77,15 @@ namespace IoTMonitorApp.API.Services
             _dbContext.Products.Add(product);
             await _dbContext.SaveChangesAsync();
 
-            return new ProductDto
+            return new CreateProductDto
             {
-                Id = product.Id,
                 Name = product.Name,
-                Slug = product.Slug,
                 BrandId = product.BrandId,
                 CategoryId = product.CategoryId,
                 UserId = product.UserId,
-                SpecificationsId = product.SpecificationsId,
-                CreatedDate = product.CreatedDate
+                SpecificationsId = product.SpecificationsId
             };
+
         }
 
         public async Task<bool> UpdateAsync(UpdateProductDto dto)

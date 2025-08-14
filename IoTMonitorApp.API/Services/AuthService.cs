@@ -1,5 +1,6 @@
 ﻿using IoTMonitorApp.API.Data;
-using IoTMonitorApp.API.Dto;
+using IoTMonitorApp.API.Dto.Auth.Login;
+using IoTMonitorApp.API.Dto.Auth.Register;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
 using Microsoft.AspNetCore.Identity;
@@ -62,9 +63,10 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public async Task<string> LoginAsync(LoginDto dto)
+        public async Task<LoginDto> LoginAsync(CreateLoginDto dto)
         {
             var user = _dbContext.Users.SingleOrDefault(u => u.Email == dto.Email);
+            var role = user?.Role;
             if (user == null)
                 throw new Exception("Email không tồn tại.");
 
@@ -72,7 +74,13 @@ namespace IoTMonitorApp.API.Services
             if (result != PasswordVerificationResult.Success)
                 throw new Exception("Mật khẩu không đúng.");
 
-            return GenerateJwtToken(dto.Email);
+            var token = GenerateJwtToken(dto.Email);
+            return new LoginDto
+            {
+                Token = token,
+                Email = user.Email,
+                Role = role
+            };
         }
         public async Task<(string token, User user)> HandleGoogleLoginAsync(ClaimsPrincipal principal)
         {

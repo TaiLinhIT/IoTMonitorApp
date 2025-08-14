@@ -33,7 +33,12 @@ namespace IoTMonitorApp.API
             #region Cấu hình các dịch vụ cần thiết
 
             // Add services to the container
-            builder.Services.AddControllers();
+            // Add config to keep Name json like Models
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                });
             builder.Services.AddSignalR();
             builder.Services.AddEndpointsApiExplorer();
 

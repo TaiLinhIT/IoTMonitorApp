@@ -1,4 +1,4 @@
-﻿namespace IoTMonitorApp.API.Dto
+﻿namespace IoTMonitorApp.API.Dto.Auth.Register
 {
     public class RegisterDto
     {

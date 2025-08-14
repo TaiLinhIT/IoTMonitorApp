@@ -1,4 +1,5 @@
-﻿using IoTMonitorApp.API.Dto;
+﻿using IoTMonitorApp.API.Dto.Auth.Login;
+using IoTMonitorApp.API.Dto.Auth.Register;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -101,12 +102,12 @@ namespace IoTMonitorApp.API.Controllers
             }
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] CreateLoginDto dto)
         {
             try
             {
                 var token = await _authService.LoginAsync(dto);
-                return Ok(new { token });
+                return Ok(token);
             }
             catch (Exception ex)
             {

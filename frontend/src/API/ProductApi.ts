@@ -1,6 +1,6 @@
 // src/api/productApi.ts
 import axiosClient from "./axiosClient";
-import { Product } from "../models/Product";
+import type { Product } from "../Models/Product";
 
 const productApi = {
   getAll: (): Promise<Product[]> => {
