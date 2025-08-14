@@ -38,10 +38,13 @@ namespace IoTMonitorApp.API.Services
                 Role = "User",
                 CreatedDate = DateTime.UtcNow,
                 ImageUrl = null,
-                GoogleId = null
-
-
-            };
+                GoogleId = null,
+                PhoneNumber = "0354267364",
+                RoleId = 1, // Giả sử RoleId là 1 cho người dùng bình thường
+                AddressId = 1, // Giả sử AddressId là 1 cho người dùng bình thường
+                BirthOfDate = DateTime.UtcNow, // Giả sử ngày sinh là ngày hiện tại
+                AssignedDate = DateTime.UtcNow // Giả sử ngày được gán là ngày hiện tại
+               };
 
             user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
             _dbContext.Users.Add(user);

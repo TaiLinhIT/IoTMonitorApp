@@ -71,7 +71,7 @@ const Dashboard: React.FC = () => {
             </div>
             {/* Hero right */}
             <div className="content-block">
-              <h1 className="heading">
+              <h1 className="heading lv1">
               Learn without limits and spread knowledge.
               </h1>
               <p className="desc">
@@ -101,25 +101,88 @@ const Dashboard: React.FC = () => {
         <div className="main-content">
           <div className="popular-top">
             <div className="info">
-              <h2 className="heading"></h2>
-              <p className="desc"></p>
+              <h2 className="heading lv2">Our popular courses</h2>
+              <p className="desc">Build new skills with new trendy courses and shine for the next future career.</p>
             </div>
             <div className="controls">
               <button className="control-btn">
                 <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 1L1 7L7 13" stroke="#FFB900" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 1L1 7L7 13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
               <button className="control-btn">
                 <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L7 7L1 13" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M1 1L7 7L1 13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
 
               </button>
             </div>
           </div>
+          <div className="course-list">
+            {/* course item 1 */}
+            <div className="course-item">
+              <a href="#!">
+                <img src="src/assets/img/course-1.jpg" alt="" className="thumb" />
+              </a>
+              <div className="info">
+                <div className="head">
+                  <h3 className="title"><a href="#!">Basic web design</a></h3>
+                  <div className="rating">
+                    <img src="src/assets/icons/star.svg" alt="star" className="star" />
+                    <span className="value">4.5</span>
+                  </div>
+                </div>
+                <p className="desc">Get the best course, gain knowledge and shine for your future career.</p>
+                <div className="foot">
+                  <span className="price">$120.75</span>
+                  <button className="btn book-btn">Book Now</button>
+                </div>
+              </div>
+            </div>
+            {/* course item 2 */}
+            <div className="course-item">
+              <a href="#!">
+                <img src="src/assets/img/course-2.jpg" alt="" className="thumb" />
+              </a>
+              <div className="info">
+                <div className="head">
+                  <h3 className="title"><a href="#!">UI/UX design</a></h3>
+                  <div className="rating">
+                    <img src="src/assets/icons/star.svg" alt="star" className="star" />
+                    <span className="value">4.5</span>
+                  </div>
+                </div>
+                <p className="desc">Get the best course, gain knowledge and shine for your future career.</p>
+                <div className="foot">
+                  <span className="price">$120.75</span>
+                  <button className="btn book-btn">Book Now</button>
+                </div>
+              </div>
+            </div>
+            {/* course item 3 */}
+            <div className="course-item">
+              <a href="#!">
+                <img src="src/assets/img/course-3.jpg" alt="" className="thumb" />
+              </a>
+              <div className="info">
+                <div className="head">
+                  <h3 className="title"><a href="#!">Web App design</a></h3>
+                  <div className="rating">
+                    <img src="src/assets/icons/star.svg" alt="star" className="star" />
+                    <span className="value">4.5</span>
+                  </div>
+                </div>
+                <p className="desc">Get the best course, gain knowledge and shine for your future career.</p>
+                <div className="foot">
+                  <span className="price">$120.75</span>
+                  <button className="btn book-btn">Book Now</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+      
   </main>
   );
 };
