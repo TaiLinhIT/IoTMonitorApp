@@ -10,6 +10,7 @@ import PrivateRoute from "../components/PrivateRoute";
 import RoleRoute from "../components/RoleRoute";
 import ErrorBoundary from "../components/ErrorBoundary";
 import ProductList from "../Features/Product/ProductList";
+import ProductDetail from "../Features/Product/ProductDetail";
 
 export const routes = [
   { path: "/", element: <Navigate to="/home" replace /> },
@@ -29,6 +30,19 @@ export const routes = [
         </PrivateRoute>
       </ErrorBoundary>
     ),
+  }
+  ,
+  {
+    path:"/product/{id}",
+    element:(
+      <ErrorBoundary>
+        <PrivateRoute>
+          <RoleRoute allowedRoles={["Admin", "User"]}>
+            <ProductDetail />
+          </RoleRoute>
+        </PrivateRoute>
+      </ErrorBoundary>
+    )
   }
   ,
   {

@@ -9,6 +9,7 @@
         public string CategoryName { get; set; }
         public string SpecificationsName { get; set; }
         public decimal Price { get; set; }
+        public string ImageUrl { get; set; }
         public DateTime CreatedDate { get; set; }
     }
 }

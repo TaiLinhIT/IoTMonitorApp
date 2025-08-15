@@ -31,6 +31,7 @@ namespace IoTMonitorApp.API.Services
                                       CategoryName = c.Name,
                                       SpecificationsName = s.Material,
                                       Price = p.Price,
+                                      ImageUrl = p.ImageUrl,
                                       CreatedDate = p.CreatedDate
                                   }).ToListAsync();
 
@@ -52,6 +53,8 @@ namespace IoTMonitorApp.API.Services
                                          BrandName = b.Name,
                                          CategoryName = c.Name,
                                          SpecificationsName = s.Material,
+                                         Price = p.Price,
+                                         ImageUrl = p.ImageUrl,
                                          CreatedDate = p.CreatedDate
                                      }).FirstOrDefaultAsync();
 
