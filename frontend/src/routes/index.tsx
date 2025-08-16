@@ -1,5 +1,6 @@
 // src/routes/index.tsx
 import { Navigate } from "react-router-dom";
+import { PATHS } from "./paths";
 import Home from "../Features/Home/pages/Home";
 import Login from "../Features/Auth/pages/Login";
 import Register from "../Features/Auth/pages/Register";
@@ -12,15 +13,16 @@ import ErrorBoundary from "../components/ErrorBoundary";
 import ProductList from "../Features/Product/ProductList";
 import ProductDetail from "../Features/Product/ProductDetail";
 
+
 export const routes = [
   { path: "/", element: <Navigate to="/home" replace /> },
-  { path: "/login", element: <Login /> },
-  { path: "/register", element: <Register /> },
-  { path: "/home", element: <Home /> },
+  { path: PATHS.login, element: <Login /> },
+  { path: PATHS.register, element: <Register /> },
+  { path: PATHS.home, element: <Home /> },
   { path: "/403", element: <Forbidden /> },
 
   {
-    path: "/dashboard",
+    path: PATHS.dashboard,
     element: (
       <ErrorBoundary>
         <PrivateRoute>
@@ -33,7 +35,7 @@ export const routes = [
   }
   ,
   {
-    path:"/product/{id}",
+    path:PATHS.productDetail,
     element:(
       <ErrorBoundary>
         <PrivateRoute>
@@ -46,7 +48,7 @@ export const routes = [
   }
   ,
   {
-    path: "/products",
+    path: PATHS.products,
     element: (
       <ErrorBoundary>
         <PrivateRoute>

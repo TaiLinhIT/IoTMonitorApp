@@ -1,7 +1,7 @@
 // src/Features/Auth/pages/Register.tsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import authApi from "../../../API/AuthApi";
+import authApi from "../../../api/AuthApi";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -37,14 +37,19 @@ const Register = () => {
           <h2 className="text-3xl font-bold">Sign up</h2>
           <p className="text-sm mt-2">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 font-medium hover:underline">
+            <Link
+              to="/login"
+              className="text-blue-600 font-medium hover:underline"
+            >
               Sign in
             </Link>
           </p>
 
           <form onSubmit={handleSubmit} className="mt-4">
             {errorMessage && (
-              <div className="text-red-600 font-medium mb-4">{errorMessage}</div>
+              <div className="text-red-600 font-medium mb-4">
+                {errorMessage}
+              </div>
             )}
 
             <input

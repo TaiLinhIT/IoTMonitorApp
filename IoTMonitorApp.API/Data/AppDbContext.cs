@@ -1,5 +1,6 @@
 ﻿using IoTMonitorApp.API.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace IoTMonitorApp.API.Data
 {
@@ -22,5 +23,15 @@ namespace IoTMonitorApp.API.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<Shipment> Shipments { get; set; }
         public DbSet<Specification> Specifications { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Product>()
+                .Property(p => p.ProductUrl)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),   // List<string> -> string
+                    v => string.IsNullOrEmpty(v) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null) // string -> List<string>
+                );
+        }
+
     }
 }

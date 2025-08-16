@@ -1,7 +1,7 @@
 // src/Features/Auth/pages/Login.tsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import authApi from "../../../API/AuthApi";
+import authApi from "../../../api/AuthApi";
 
 const Login = () => {
   const navigate = useNavigate();

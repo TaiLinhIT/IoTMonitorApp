@@ -17,51 +17,60 @@ namespace IoTMonitorApp.API.Services
 
         public async Task<IEnumerable<ProductDto>> GetAllAsync()
         {
-            var products = await (from p in _dbContext.Products
-                                  join b in _dbContext.Brands on p.BrandId equals b.Id
-                                  join c in _dbContext.Categories on p.CategoryId equals c.Id
-                                  join s in _dbContext.Specifications on p.SpecificationsId equals s.Id
-                                  where !p.IsDelete
-                                  select new ProductDto
-                                  {
-                                      Id = p.Id,
-                                      Name = p.Name,
-                                      Slug = p.Slug,
-                                      BrandName = b.Name,
-                                      CategoryName = c.Name,
-                                      SpecificationsName = s.Material,
-                                      Price = p.Price,
-                                      ImageUrl = p.ImageUrl,
-                                      CreatedDate = p.CreatedDate
-                                  }).ToListAsync();
+            try
+            {
+                var products = await (from p in _dbContext.Products
+                                      join b in _dbContext.Brands on p.BrandId equals b.Id
+                                      join c in _dbContext.Categories on p.CategoryId equals c.Id
+                                      join s in _dbContext.Specifications on p.SpecificationsId equals s.Id
+                                      where !p.IsDelete
+                                      select new ProductDto
+                                      {
+                                          Id = p.Id,
+                                          Name = p.Name,
+                                          Slug = p.Slug,
+                                          BrandName = b.Name,
+                                          CategoryName = c.Name,
+                                          SpecificationsName = s.Material,
+                                          Price = p.Price,
+                                          UrlProduct = p.ProductUrl.FirstOrDefault() ?? string.Empty,
+                                          CreatedDate = p.CreatedDate
+                                      }).ToListAsync();
+                return products;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Enumerable.Empty<ProductDto>();
+            }
 
-            return products;
+
         }
 
-        public async Task<ProductDto> GetByIdAsync(Guid id)
-        {
-            var Findproduct = await (from p in _dbContext.Products
-                                     join b in _dbContext.Brands on p.BrandId equals b.Id
-                                     join c in _dbContext.Categories on p.CategoryId equals c.Id
-                                     join s in _dbContext.Specifications on p.SpecificationsId equals s.Id
-                                     where p.Id == id && !p.IsDelete
-                                     select new ProductDto
-                                     {
-                                         Id = p.Id,
-                                         Name = p.Name,
-                                         Slug = p.Slug,
-                                         BrandName = b.Name,
-                                         CategoryName = c.Name,
-                                         SpecificationsName = s.Material,
-                                         Price = p.Price,
-                                         ImageUrl = p.ImageUrl,
-                                         CreatedDate = p.CreatedDate
-                                     }).FirstOrDefaultAsync();
+        //public async Task<ProductDto> GetByIdAsync(Guid id)
+        //{
+        //    var Findproduct = await (from p in _dbContext.Products
+        //                             join b in _dbContext.Brands on p.BrandId equals b.Id
+        //                             join c in _dbContext.Categories on p.CategoryId equals c.Id
+        //                             join s in _dbContext.Specifications on p.SpecificationsId equals s.Id
+        //                             where p.Id == id && !p.IsDelete
+        //                             select new ProductDto
+        //                             {
+        //                                 Id = p.Id,
+        //                                 Name = p.Name,
+        //                                 Slug = p.Slug,
+        //                                 BrandName = b.Name,
+        //                                 CategoryName = c.Name,
+        //                                 SpecificationsName = s.Material,
+        //                                 Price = p.Price,
+        //                                 ImageUrl = p.ImageUrl,
+        //                                 CreatedDate = p.CreatedDate
+        //                             }).FirstOrDefaultAsync();
 
-            if (Findproduct == null) return null;
+        //    if (Findproduct == null) return null;
 
-            return Findproduct;
-        }
+        //    return Findproduct;
+        //}
 
         public async Task<CreateProductDto> CreateAsync(CreateProductDto dto)
         {
@@ -117,6 +126,44 @@ namespace IoTMonitorApp.API.Services
 
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<ProductItemDto> GetProductItem(Guid id)
+        {
+            try
+            {
+                var findProduct = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == id);
+                if (findProduct == null || findProduct.IsDelete)
+                {
+                    return null;
+                }
+                var productItem = await (from p in _dbContext.Products
+                                         join b in _dbContext.Brands on p.BrandId equals b.Id
+                                         join c in _dbContext.Categories on p.CategoryId equals c.Id
+                                         join s in _dbContext.Specifications on p.SpecificationsId equals s.Id
+                                         where p.Id == id && !p.IsDelete
+                                         select new ProductItemDto
+                                         {
+                                             Id = p.Id,
+                                             Name = p.Name,
+                                             Slug = p.Slug,
+                                             BrandName = b.Name,
+                                             CategoryName = c.Name,
+                                             SpecificationsName = s.Material,
+                                             Price = p.Price,
+                                             ProductUrl = p.ProductUrl
+                                         }).FirstOrDefaultAsync();
+                if (productItem == null)
+                {
+                    return null;
+                }
+                return productItem;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
         }
     }
 }

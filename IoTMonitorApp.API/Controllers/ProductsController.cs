@@ -24,20 +24,20 @@ namespace IoTMonitorApp.API.Controllers
         }
 
         // GET: api/Product/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null) return NotFound(); // 404
-            return Ok(product);
-        }
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetById(Guid id)
+        //{
+        //    var product = await _productService.GetByIdAsync(id);
+        //    if (product == null) return NotFound(); // 404
+        //    return Ok(product);
+        //}
 
         // POST: api/Product
         [HttpPost]
         public async Task<IActionResult> Create(CreateProductDto dto)
         {
             var newProduct = await _productService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { newProduct });
+            return Ok();
             // 201 Created + link GET
         }
 
@@ -60,6 +60,14 @@ namespace IoTMonitorApp.API.Controllers
             var success = await _productService.DeleteAsync(id);
             if (!success) return NotFound(); // 404
             return NoContent(); // 204
+        }
+        // GET: api/ProductItem/{id}
+        [HttpGet("Product/{id}")]
+        public async Task<IActionResult> GetProductItem(Guid id)
+        {
+            var productItem = await _productService.GetProductItem(id);
+            if (productItem == null) return NotFound(); // 404
+            return Ok(productItem);
         }
     }
 }

@@ -6,7 +6,8 @@ namespace IoTMonitorApp.API.Models
     public class Product : BaseEntity
     {
         public Guid Id { get; set; }
-        public string ImageUrl { get; set; }
+        public int UrlListId { get; set; }
+        public List<string> ProductUrl { get; set; } = new();
         public int BrandId { get; set; }
         public int CategoryId { get; set; }
         public int UserId { get; set; }

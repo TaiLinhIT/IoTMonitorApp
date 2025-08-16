@@ -5,6 +5,6 @@ export const PATHS = {
     register: "/register",
     dashboard: "/dashboard",
     products: "/products",
-    productDetail: "/products/:id",
+    productDetail: "/product/:id",
   };
   
