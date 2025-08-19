@@ -1,12 +1,12 @@
 export type ProductDetail = {
-    Id: number;
+    Id: string;
     Name: string;
     Price: number;
-    slug: string;
+    Slug: string;
     ImageUrl: string;
     CategoryName: string;
     BrandName: string;
     SpecificationsName: string;
-    ImageUrls: string[];
+    ProductUrl: string[];
 
 }

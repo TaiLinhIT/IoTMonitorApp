@@ -12,6 +12,7 @@ import RoleRoute from "../components/RoleRoute";
 import ErrorBoundary from "../components/ErrorBoundary";
 import ProductList from "../Features/Product/ProductList";
 import ProductDetail from "../Features/Product/ProductDetail";
+import CheckOut from "../Features/order/CheckOut";
 
 
 export const routes = [
@@ -59,5 +60,18 @@ export const routes = [
       </ErrorBoundary>
     ),
   },
+  {
+    path:PATHS.checkOut,
+    element:(
+      <ErrorBoundary>
+        <PrivateRoute>
+          <RoleRoute allowedRoles={["Admin", "User"]}>
+            <CheckOut />
+          </RoleRoute>
+        </PrivateRoute>
+      </ErrorBoundary>
+    )
+  }
+  ,
   { path: "*", element: <PageNotFound /> },
 ];

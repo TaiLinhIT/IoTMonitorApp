@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import type { Product } from "../../models/Product";
 import productApi from "../../api/ProductApi";
 import "../../assets/css/Product/products.css";
+import { Link } from "react-router-dom";
+import { PATHS } from "../../routes/paths";
+import { generatePath } from "react-router-dom";
 
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,17 +26,12 @@ const ProductList: React.FC = () => {
   return (
     <div className="product-list">
       {products.map((product) => (
-        <div className="product-item" key={product.Id}>
-          <a href="#!">
-            <img src={product.ImageUrl} alt={product.Name} className="thumb" />
-          </a>
+        <Link to={generatePath(PATHS.productDetail, { slug:product.Slug, id: product.Id })} className="product-item">
+          <img src={product.UrlProduct} alt={product.Name} className="thumb" />
           <div className="info">
             <div className="head">
-              <h3 className="title">
-                <a href="#!">{product.Name}</a>
-              </h3>
+              <h3 className="title">{product.Name}</h3>
               <div className="rating">
-                <img src="" alt="star" className="star" />
                 <span className="value">{product.CategoryName}</span>
               </div>
             </div>
@@ -42,12 +40,12 @@ const ProductList: React.FC = () => {
               <span className="price">
                 {product.Price.toLocaleString("vi-VN")}₫
               </span>
-              <button className="btn book-btn">Mua Ngay</button>
             </div>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
+
   );
 };
 
