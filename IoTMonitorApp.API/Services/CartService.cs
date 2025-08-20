@@ -8,144 +8,140 @@ namespace IoTMonitorApp.API.Services
 {
     public class CartService : ICartService
     {
-        private readonly AppDbContext _dbContext;
-        public CartService(AppDbContext dbContext)
+        private readonly AppDbContext _context;
+
+        public CartService(AppDbContext context)
         {
-            _dbContext = dbContext;
+            _context = context;
         }
 
-        public async Task AddCartAsync(CartDto dto)
+        public async Task<CartDto?> GetCartByUserAsync(Guid userId)
         {
-            var cart = new Cart
-            {
-                UserId = dto.UserId,
-                IsCheckOut = dto.IsCheckOut,
-                Slug = dto.Slug,
-                CreatedDate = DateTime.UtcNow,
-                UpdatedDate = null,
-                IsDelete = false
-            };
+            var cart = await _context.carts
+                .FirstOrDefaultAsync(c => c.UserId == userId && !c.IsCheckOut);
 
-            await _dbContext.carts.AddAsync(cart);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task<IEnumerable<CartDto>> GetAllAsync()
-        {
-            return await _dbContext.carts
-                .Select(c => new CartDto
-                {
-                    Id = c.Id,
-                    UserId = c.UserId,
-                    IsCheckOut = c.IsCheckOut,
-                    Slug = c.Slug,
-                    CreatedDate = c.CreatedDate,
-                    UpdatedDate = c.UpdatedDate,
-                    IsDelete = c.IsDelete
-                })
-                .ToListAsync();
-        }
-
-        public async Task<CartDto> GetCartByIdAsync(int id)
-        {
-            var cart = await _dbContext.carts.FirstOrDefaultAsync(c => c.Id == id);
             if (cart == null) return null;
+
+            var items = await _context.CartItems
+                .Where(i => i.CartId == cart.Id)
+                .ToListAsync();
+
+            // lấy thêm thông tin product (nếu cần hiển thị)
+            var productIds = items.Select(i => i.ProductId).ToList();
+            var products = await _context.Products
+                .Where(p => productIds.Contains(p.Id))
+                .ToListAsync();
+
+            var itemDtos = items.Select(i =>
+            {
+                var product = products.FirstOrDefault(p => p.Id == i.ProductId);
+                return new CartItemDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = product?.Name ?? "",
+                    ImageUrl = product?.ProductUrl.FirstOrDefault(),
+                    Price = (decimal)i.PriceAtTime,
+                    Quantity = i.Quantity
+                };
+            }).ToList();
 
             return new CartDto
             {
                 Id = cart.Id,
                 UserId = cart.UserId,
-                IsCheckOut = cart.IsCheckOut,
-                Slug = cart.Slug,
-                CreatedDate = cart.CreatedDate,
-                UpdatedDate = cart.UpdatedDate,
-                IsDelete = cart.IsDelete
+                Items = itemDtos,
+                TotalPrice = itemDtos.Sum(i => i.Price * i.Quantity)
             };
         }
 
-        public async Task<string> UpdateCartAsync(CartDto dto)
+        public async Task<CartDto> AddItemAsync(Guid userId, Guid productId, int quantity)
         {
-            var cart = await _dbContext.carts.FirstOrDefaultAsync(c => c.Id == dto.Id);
-            if (cart == null) return "Cart not found";
+            var cart = await _context.carts
+                .FirstOrDefaultAsync(c => c.UserId == userId && !c.IsCheckOut);
 
-            cart.IsCheckOut = dto.IsCheckOut;
-            cart.Slug = dto.Slug;
-            cart.UpdatedDate = DateTime.UtcNow;
+            if (cart == null)
+            {
+                cart = new Cart { UserId = userId, IsCheckOut = false, CreatedDate = DateTime.UtcNow };
+                _context.carts.Add(cart);
+                await _context.SaveChangesAsync();
+            }
 
-            await _dbContext.SaveChangesAsync();
-            return "Update successful";
+            var existingItem = await _context.CartItems
+                .FirstOrDefaultAsync(i => i.CartId == cart.Id && i.ProductId == productId);
+
+            if (existingItem != null)
+            {
+                existingItem.Quantity += quantity;
+            }
+            else
+            {
+                var product = await _context.Products.FindAsync(productId);
+                if (product == null) throw new Exception("Product not found");
+
+                var newItem = new CartItem
+                {
+                    CartId = cart.Id,
+                    ProductId = productId,
+                    Quantity = quantity,
+                    PriceAtTime = (double)product.Price
+                };
+                _context.CartItems.Add(newItem);
+            }
+
+            await _context.SaveChangesAsync();
+            return await GetCartByUserAsync(userId) ?? throw new Exception("Cart error");
         }
 
-        public async Task<bool> DeleteCartAsync(int id)
+        public async Task<CartDto> UpdateItemAsync(Guid userId, Guid productId, int quantity)
         {
-            var cart = await _dbContext.carts.FirstOrDefaultAsync(c => c.Id == id);
+            var cart = await _context.carts
+                .FirstOrDefaultAsync(c => c.UserId == userId && !c.IsCheckOut);
+
+            if (cart == null) throw new Exception("Cart not found");
+
+            var item = await _context.CartItems
+                .FirstOrDefaultAsync(i => i.CartId == cart.Id && i.ProductId == productId);
+
+            if (item == null) throw new Exception("Item not found");
+
+            item.Quantity = quantity;
+            await _context.SaveChangesAsync();
+
+            return await GetCartByUserAsync(userId) ?? throw new Exception("Cart error");
+        }
+
+        public async Task<CartDto> RemoveItemAsync(Guid userId, Guid productId)
+        {
+            var cart = await _context.carts
+                .FirstOrDefaultAsync(c => c.UserId == userId && !c.IsCheckOut);
+
+            if (cart == null) throw new Exception("Cart not found");
+
+            var item = await _context.CartItems
+                .FirstOrDefaultAsync(i => i.CartId == cart.Id && i.ProductId == productId);
+
+            if (item != null)
+            {
+                _context.CartItems.Remove(item);
+                await _context.SaveChangesAsync();
+            }
+
+            return await GetCartByUserAsync(userId) ?? throw new Exception("Cart error");
+        }
+
+        public async Task<bool> ClearCartAsync(Guid userId)
+        {
+            var cart = await _context.carts
+                .FirstOrDefaultAsync(c => c.UserId == userId && !c.IsCheckOut);
+
             if (cart == null) return false;
-            cart.IsDelete = true;
-            await _dbContext.SaveChangesAsync();
+
+            var items = _context.CartItems.Where(i => i.CartId == cart.Id);
+            _context.CartItems.RemoveRange(items);
+            await _context.SaveChangesAsync();
+
             return true;
         }
-
-        public async Task<IEnumerable<CartDto>> GetCartsByUserIdAsync(string userId)
-        {
-            try
-            {
-                var carts = await _dbContext.carts
-                    .Where(c => c.UserId.ToString() == userId && !c.IsDelete)
-                    .Select(c => new CartDto
-                    {
-                        Id = c.Id,
-                        UserId = c.UserId,
-                        IsCheckOut = c.IsCheckOut,
-                        Slug = c.Slug,
-                        CreatedDate = c.CreatedDate,
-                        UpdatedDate = c.UpdatedDate,
-                        IsDelete = c.IsDelete
-                    })
-                    .ToListAsync();
-
-                return carts;
-            }
-            catch (Exception ex)
-            {
-                // Có thể log lỗi tại đây
-                throw new Exception($"Error retrieving carts for user {userId}: {ex.Message}");
-            }
-        }
-
-
-        public async Task<string> AddItemToCartAsync(int cartId, CartItem item)
-        {
-            try
-            {
-                var cartExists = await _dbContext.carts.AnyAsync(c => c.Id == cartId);
-                if (!cartExists)
-                    return "Cart not found";
-
-                var existingItem = await _dbContext.CartItems
-                    .FirstOrDefaultAsync(ci => ci.CartId == cartId && ci.ProductId == item.ProductId);
-
-                if (existingItem != null)
-                {
-                    existingItem.Quantity += item.Quantity;
-                }
-                else
-                {
-                    item.CartId = cartId;
-                    await _dbContext.CartItems.AddAsync(item);
-                }
-
-                await _dbContext.SaveChangesAsync();
-                return "Item added successfully";
-            }
-            catch (Exception ex)
-            {
-                return $"Error adding item: {ex.Message}";
-            }
-        }
-
-        public Task<string> RemoveItemFromCartAsync(int cartId, int itemId)
-        {
-            throw new NotImplementedException();
-        }
     }
+
 }

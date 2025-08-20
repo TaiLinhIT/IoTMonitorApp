@@ -12,7 +12,7 @@ import RoleRoute from "../components/RoleRoute";
 import ErrorBoundary from "../components/ErrorBoundary";
 import ProductList from "../Features/Product/ProductList";
 import ProductDetail from "../Features/Product/ProductDetail";
-import CheckOut from "../Features/order/CheckOut";
+import Cart from "../Features/cart/Cart";
 
 
 export const routes = [
@@ -61,12 +61,12 @@ export const routes = [
     ),
   },
   {
-    path:PATHS.checkOut,
+    path:PATHS.carts,
     element:(
       <ErrorBoundary>
         <PrivateRoute>
           <RoleRoute allowedRoles={["Admin", "User"]}>
-            <CheckOut />
+            <Cart />
           </RoleRoute>
         </PrivateRoute>
       </ErrorBoundary>

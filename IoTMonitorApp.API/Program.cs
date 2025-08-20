@@ -27,7 +27,8 @@ namespace IoTMonitorApp.API
                 {
                     policy.WithOrigins("http://localhost:5173") // Cho phép React app gọi
                           .AllowAnyHeader()
-                          .AllowAnyMethod();
+                          .AllowAnyMethod()
+                          .AllowCredentials();
                 });
             });
             #region Cấu hình các dịch vụ cần thiết
@@ -112,10 +113,10 @@ namespace IoTMonitorApp.API
             builder.Services.AddScoped<ISpecificationService, SpecificationService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<ICartService, CartService>();
-            builder.Services.AddScoped<ICartItemService, CartItemService>();
             builder.Services.AddScoped<IOrderItemService, OrderItemService>();
             builder.Services.AddScoped<IShipmentService, ShipmentService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddScoped<IJwtService, JwtService>();
 
 
             // Đăng ký AutoMapper, tìm tất cả Profiles trong assembly hiện tại
@@ -142,6 +143,15 @@ namespace IoTMonitorApp.API
             // Đăng ký Swagger
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // Cho phép Swagger dùng HTTP hoặc bypass SSL khi dev
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ConfigureHttpsDefaults(httpsOptions =>
+                {
+                    httpsOptions.ClientCertificateMode = Microsoft.AspNetCore.Server.Kestrel.Https.ClientCertificateMode.NoCertificate;
+                });
+            });
 
 
             var app = builder.Build();

@@ -1,8 +1,8 @@
-﻿using IoTMonitorApp.API.Dto.Auth.Login;
+﻿using Google.Apis.Auth; // ✅ cần package Google.Apis.Auth
+using IoTMonitorApp.API.Dto.Auth.Login;
 using IoTMonitorApp.API.Dto.Auth.Register;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,78 +16,30 @@ namespace IoTMonitorApp.API.Controllers
     {
         private readonly IConfiguration _config;
         private readonly IAuthService _authService;
-        public AuthController(IConfiguration config, IAuthService authService)
+        private readonly IJwtService _jwtService;
+
+        public AuthController(IConfiguration config, IAuthService authService, IJwtService jwtService)
         {
             _config = config;
             _authService = authService;
+            _jwtService = jwtService;
         }
 
-        [HttpGet("login-google")]
-        public IActionResult GoogleLogin()
+        // ---------------- Email + Password ----------------
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] CreateLoginDto dto)
         {
-            var properties = new AuthenticationProperties { RedirectUri = Url.Action("GoogleResponse") };
-            return Challenge(properties, "Google");
-        }
-
-        [HttpGet("google-response")]
-        public async Task<IActionResult> GoogleResponse()
-        {
-            var result = await HttpContext.AuthenticateAsync("Cookies");
-            if (!result.Succeeded) return Unauthorized();
-
             try
             {
-                var (token, user) = await _authService.HandleGoogleLoginAsync(result.Principal);
-                return Ok(new
-                {
-                    user.Email,
-                    user.FullName,
-                    token,
-                    hasPassword = !string.IsNullOrEmpty(user.PasswordHash) // <== kiểm tra đã có mật khẩu chưa
-                });
+                var token = await _authService.LoginAsync(dto);
+                return Ok(token);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("secure-data")]
-        public IActionResult GetSecureData()
-        {
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
-            return Ok(new { email, message = "You are authorized!" });
-        }
-
-
-        [HttpGet("callback")]
-        public IActionResult Callback()
-        {
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
-            var name = User.FindFirst(ClaimTypes.Name)?.Value;
-
-            if (email == null)
-            {
-                return BadRequest("Không lấy được thông tin email");
-            }
-
-            var token = _authService.GenerateJwtToken(email);
-
-            return Ok(new { email, name, token });
-        }
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost("set-password")]
-        public async Task<IActionResult> SetPassword([FromBody] SetPasswordDto dto)
-        {
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
-            if (email == null) return Unauthorized();
-
-            var success = await _authService.SetPasswordAsync(email, dto.Password);
-            if (!success) return NotFound();
-
-            return Ok(new { message = "Mật khẩu đã được lưu." });
-        }
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -101,19 +53,64 @@ namespace IoTMonitorApp.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] CreateLoginDto dto)
+
+        // ---------------- Google Login (SPA flow) ----------------
+        [HttpPost("login-google")]
+        public async Task<IActionResult> LoginGoogle([FromBody] GoogleLoginDto dto)
         {
             try
             {
-                var token = await _authService.LoginAsync(dto);
-                return Ok(token);
+                // ✅ Verify id_token từ Google
+                var payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken, new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = new[] { _config["Google:ClientId"] }
+                });
+
+                // ✅ gọi service với payload
+                var (token, user) = await _authService.HandleGoogleLoginAsync(payload);
+
+                return Ok(new
+                {
+                    user.Email,
+                    user.FullName,
+                    Token = token,
+                    hasPassword = !string.IsNullOrEmpty(user.PasswordHash)
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return Unauthorized(new { message = "Xác thực Google thất bại", error = ex.Message });
             }
-
         }
+
+
+        // ---------------- Secure test ----------------
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("secure-data")]
+        public IActionResult GetSecureData()
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            return Ok(new { email, message = "You are authorized!" });
+        }
+
+        // ---------------- Đặt mật khẩu cho tài khoản Google ----------------
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("set-password")]
+        public async Task<IActionResult> SetPassword([FromBody] SetPasswordDto dto)
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (email == null) return Unauthorized();
+
+            var success = await _authService.SetPasswordAsync(email, dto.Password);
+            if (!success) return NotFound();
+
+            return Ok(new { message = "Mật khẩu đã được lưu." });
+        }
+    }
+
+    // ---------------- DTO cho Google login ----------------
+    public class GoogleLoginDto
+    {
+        public string IdToken { get; set; } = "";
     }
 }

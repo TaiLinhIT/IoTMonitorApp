@@ -1,16 +1,12 @@
-﻿using IoTMonitorApp.API.Dto.Auth.Login;
+﻿using Google.Apis.Auth;
+using IoTMonitorApp.API.Dto.Auth.Login;
 using IoTMonitorApp.API.Dto.Auth.Register;
 using IoTMonitorApp.API.Models;
-using System.Security.Claims;
 
-namespace IoTMonitorApp.API.IServices
+public interface IAuthService
 {
-    public interface IAuthService
-    {
-        Task<(string token, User user)> HandleGoogleLoginAsync(ClaimsPrincipal principal);//Đăng nhập bằng tài khoản Google (OAuth2)
-        string GenerateJwtToken(string email);//Tạo JSON Web Token (JWT)
-        Task RegisterAsync(RegisterDto dto);//Đăng ký người dùng thủ công (không qua Google)
-        Task<LoginDto> LoginAsync(CreateLoginDto dto);//Đăng nhập người dùng thủ công (không qua Google)
-        Task<bool> SetPasswordAsync(string email, string password);
-    }
+    Task<string> LoginAsync(CreateLoginDto dto);
+    Task RegisterAsync(RegisterDto dto);
+    Task<(string token, User user)> HandleGoogleLoginAsync(GoogleJsonWebSignature.Payload payload);
+    Task<bool> SetPasswordAsync(string email, string password);
 }

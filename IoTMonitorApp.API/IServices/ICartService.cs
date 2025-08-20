@@ -1,17 +1,14 @@
 ﻿using IoTMonitorApp.API.Dto.Cart;
-using IoTMonitorApp.API.Models;
 
 namespace IoTMonitorApp.API.IServices
 {
     public interface ICartService
     {
-        Task<IEnumerable<CartDto>> GetAllAsync();
-        Task<CartDto> GetCartByIdAsync(int id);
-        Task AddCartAsync(CartDto dto);
-        Task<string> UpdateCartAsync(CartDto dto);
-        Task<bool> DeleteCartAsync(int id);
-        Task<IEnumerable<CartDto>> GetCartsByUserIdAsync(string userId);
-        Task<string> AddItemToCartAsync(int cartId, CartItem item);
-        Task<string> RemoveItemFromCartAsync(int cartId, int itemId);
+        Task<CartDto?> GetCartByUserAsync(Guid userId);
+        Task<CartDto> AddItemAsync(Guid userId, Guid productId, int quantity);
+        Task<CartDto> UpdateItemAsync(Guid userId, Guid productId, int quantity);
+        Task<CartDto> RemoveItemAsync(Guid userId, Guid productId);
+        Task<bool> ClearCartAsync(Guid userId);
     }
+
 }

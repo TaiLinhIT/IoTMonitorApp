@@ -3,14 +3,16 @@ import { useEffect, useState } from "react";
 import ProductDetailApi from "../../api/ProductDetailApi";
 import type { ProductDetail as ProductDetailModel } from "../../models/ProductDetail";
 import "../../assets/css/Product/productDetail.css";
-import { Link, generatePath } from "react-router-dom";
 import { PATHS } from "../../routes/paths";
+import cartApi from "../../api/CartApi"; // 🔹 import cartApi để gọi giỏ hàng
+import { useNavigate } from "react-router-dom";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<ProductDetailModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (id) {
@@ -28,6 +30,26 @@ const ProductDetail = () => {
     }
   }, [id]);
 
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("Bạn cần đăng nhập trước khi thêm giỏ hàng");
+      navigate("/login");
+      return;
+    }
+  
+    try {
+      await cartApi.addItem(product.Id, 1);
+      alert("✅ Đã thêm vào giỏ hàng");
+    } catch (error) {
+      console.error("❌ Lỗi thêm giỏ hàng:", error);
+      alert("Không thể thêm sản phẩm vào giỏ hàng");
+    }
+  };
+  
+  
+  
+
   if (loading) return <p>Đang tải sản phẩm...</p>;
   if (!product) return <p>Không tìm thấy sản phẩm</p>;
 
@@ -41,7 +63,7 @@ const ProductDetail = () => {
             src={url}
             alt={product.Name}
             className={`img-item ${selectedImage === url ? "active" : ""}`}
-            onClick={() => setSelectedImage(url)} // khi nhấn thì đổi ảnh chính
+            onClick={() => setSelectedImage(url)}
             style={{ cursor: "pointer" }}
           />
         ))}
@@ -69,11 +91,9 @@ const ProductDetail = () => {
         </div>
 
         <div>
-          <Link to={generatePath(PATHS.checkOut, { slug:product.Slug, id: product.Id })}>
-            <button className="btn book-btn">Đặt Hàng</button>
-          </Link>
-          <button className="btn book-btn">Thêm Giỏ Hàng</button>
-
+          <button onClick={handleAddToCart} className="btn book-btn">
+            Thêm Giỏ Hàng
+          </button>
         </div>
       </div>
     </div>

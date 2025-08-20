@@ -6,6 +6,7 @@ export const PATHS = {
     dashboard: "/dashboard",
     products: "/products",
     productDetail: "/product/:slug/:id",
+    carts: "/carts",
     checkOut: "/checkout/product/:slug/:id",
   };
   

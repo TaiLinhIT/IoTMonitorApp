@@ -1,12 +1,14 @@
 ﻿using IoTMonitorApp.API.Dto.Cart;
 using IoTMonitorApp.API.IServices;
-using IoTMonitorApp.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace IoTMonitorApp.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
@@ -16,73 +18,60 @@ namespace IoTMonitorApp.API.Controllers
             _cartService = cartService;
         }
 
-        // GET: api/cart
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetCart()
         {
-            var carts = await _cartService.GetAllAsync();
-            return Ok(carts);
-        }
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
 
-        // GET: api/cart/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var cart = await _cartService.GetCartByIdAsync(id);
-            if (cart == null) return NotFound();
+            var cart = await _cartService.GetCartByUserAsync(userId.Value);
             return Ok(cart);
         }
 
-        // GET: api/cart/user/{userId}
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetByUserId(string userId)
+        [HttpPost("add")]
+        public async Task<IActionResult> AddItem([FromBody] AddToCartDto dto)
         {
-            var carts = await _cartService.GetCartsByUserIdAsync(userId);
-            return Ok(carts);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
+
+            var cart = await _cartService.AddItemAsync(userId.Value, dto.ProductId, dto.Quantity);
+            return Ok(cart);
         }
 
-        // POST: api/cart
-        [HttpPost]
-        public async Task<IActionResult> AddCart([FromBody] CartDto dto)
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateItem([FromBody] UpdateCartItemDto dto)
         {
-            await _cartService.AddCartAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
+
+            var cart = await _cartService.UpdateItemAsync(userId.Value, dto.ProductId, dto.Quantity);
+            return Ok(cart);
         }
 
-        // PUT: api/cart
-        [HttpPut]
-        public async Task<IActionResult> UpdateCart([FromBody] CartDto dto)
+        [HttpDelete("remove")]
+        public async Task<IActionResult> RemoveItem([FromQuery] Guid productId)
         {
-            var result = await _cartService.UpdateCartAsync(dto);
-            if (result == "Cart not found") return NotFound(result);
-            return Ok(result);
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
+
+            var cart = await _cartService.RemoveItemAsync(userId.Value, productId);
+            return Ok(cart);
         }
 
-        // DELETE: api/cart/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCart(int id)
+        [HttpDelete("clear")]
+        public async Task<IActionResult> ClearCart()
         {
-            var success = await _cartService.DeleteCartAsync(id);
-            if (!success) return NotFound();
-            return NoContent();
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
+
+            var result = await _cartService.ClearCartAsync(userId.Value);
+            return result ? Ok("Cart cleared") : NotFound("Cart not found");
         }
 
-        // POST: api/cart/{cartId}/item
-        [HttpPost("{cartId}/item")]
-        public async Task<IActionResult> AddItemToCart(int cartId, [FromBody] CartItem item)
+        private Guid? GetUserId()
         {
-            var result = await _cartService.AddItemToCartAsync(cartId, item);
-            if (result.Contains("not found")) return NotFound(result);
-            return Ok(result);
-        }
-
-        // DELETE: api/cart/{cartId}/item/{itemId}
-        [HttpDelete("{cartId}/item/{itemId}")]
-        public async Task<IActionResult> RemoveItemFromCart(int cartId, int itemId)
-        {
-            var result = await _cartService.RemoveItemFromCartAsync(cartId, itemId);
-            if (result.Contains("not found")) return NotFound(result);
-            return Ok(result);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : (Guid?)null;
         }
     }
 }
