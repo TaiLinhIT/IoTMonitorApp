@@ -27,7 +27,7 @@ namespace IoTMonitorApp.API.Services
             }
         }
 
-        public async Task<bool> DeleteUserAsync(int id)
+        public async Task<bool> DeleteUserAsync(Guid id)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace IoTMonitorApp.API.Services
             return await _dbContext.Users.ToListAsync();
         }
 
-        public async Task<User> GetByIdAsync(int id)
+        public async Task<User> GetByIdAsync(Guid id)
         {
             try
             {

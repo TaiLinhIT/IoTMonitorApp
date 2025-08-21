@@ -77,16 +77,21 @@ namespace IoTMonitorApp.API.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_configuration["Authentication:Jwt:Key"])
+            );
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+
+
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: _configuration["Authentication:Jwt:Issuer"],
+                audience: _configuration["Authentication:Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: creds
             );
+
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

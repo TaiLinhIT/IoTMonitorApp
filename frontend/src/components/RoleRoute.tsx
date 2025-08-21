@@ -9,7 +9,6 @@ interface RoleRouteProps {
 
 const RoleRoute = ({ children, allowedRoles }: RoleRouteProps) => {
   const role = localStorage.getItem("userRole");
-
   if (!role || !allowedRoles.includes(role)) {
     return <Navigate to="/403" replace />;
   }

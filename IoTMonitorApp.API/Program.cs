@@ -2,14 +2,11 @@
 using IoTMonitorApp.API.Data;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
-using System.Security.Claims;
 using System.Text;
 
 namespace IoTMonitorApp.API
@@ -58,8 +55,10 @@ namespace IoTMonitorApp.API
 
             builder.Services.AddAuthentication(options =>
             {
-                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme; // 👈 mặc định dùng JWT
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                //options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                //options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
             })
             .AddCookie("Cookies")// Lưu đăng nhập sau khi Google login
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -84,23 +83,22 @@ namespace IoTMonitorApp.API
             {
                 options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
                 options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-                options.CallbackPath = "/signin-google";
 
-                options.Events.OnCreatingTicket = async context =>
-                {
-                    var identifier = context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //options.Events.OnCreatingTicket = async context =>
+                //{
+                //    var identifier = context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                    // Thêm claim ProviderId vào danh tính
-                    if (!string.IsNullOrEmpty(identifier))
-                    {
-                        var claimsIdentity = (ClaimsIdentity)context.Principal.Identity;
-                        claimsIdentity.AddClaim(new Claim("ProviderId", identifier));
-                    }
-                    //Đăng nhập  cookie khi google trả về thành công
-                    await context.HttpContext.SignInAsync(
-                        "Cookies", context.Principal);
-                    context.Response.Redirect("/api/auth/google-response");
-                };
+                //    // Thêm claim ProviderId vào danh tính
+                //    if (!string.IsNullOrEmpty(identifier))
+                //    {
+                //        var claimsIdentity = (ClaimsIdentity)context.Principal.Identity;
+                //        claimsIdentity.AddClaim(new Claim("ProviderId", identifier));
+                //    }
+                //    //Đăng nhập  cookie khi google trả về thành công
+                //    await context.HttpContext.SignInAsync(
+                //        "Cookies", context.Principal);
+                //    context.Response.Redirect("/api/auth/google-response");
+                //};
 
             });
             #endregion

@@ -70,8 +70,18 @@ namespace IoTMonitorApp.API.Controllers
 
         private Guid? GetUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : (Guid?)null;
+            try
+            {
+
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : (Guid?)null;
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+                return null;
+            }
         }
     }
 }

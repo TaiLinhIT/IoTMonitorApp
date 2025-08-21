@@ -1,5 +1,4 @@
-﻿using Google.Apis.Auth; // ✅ cần package Google.Apis.Auth
-using IoTMonitorApp.API.Dto.Auth.Login;
+﻿using IoTMonitorApp.API.Dto.Auth.Login;
 using IoTMonitorApp.API.Dto.Auth.Register;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
@@ -60,28 +59,26 @@ namespace IoTMonitorApp.API.Controllers
         {
             try
             {
-                // ✅ Verify id_token từ Google
-                var payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken, new GoogleJsonWebSignature.ValidationSettings
-                {
-                    Audience = new[] { _config["Google:ClientId"] }
-                });
+                var payload = await Google.Apis.Auth.GoogleJsonWebSignature.ValidateAsync(dto.IdToken);
 
-                // ✅ gọi service với payload
-                var (token, user) = await _authService.HandleGoogleLoginAsync(payload);
+                var (appToken, userDto) = await _authService.HandleGoogleLoginAsync(payload);
 
                 return Ok(new
                 {
-                    user.Email,
-                    user.FullName,
-                    Token = token,
-                    hasPassword = !string.IsNullOrEmpty(user.PasswordHash)
+                    token = appToken,
+                    userDto.FullName,
+                    userDto.PhoneNumber,
+                    userDto.Email,
+                    userDto.Role,
+                    hasPassword = !string.IsNullOrEmpty(userDto.PasswordHash)
                 });
             }
             catch (Exception ex)
             {
-                return Unauthorized(new { message = "Xác thực Google thất bại", error = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
         }
+
 
 
         // ---------------- Secure test ----------------

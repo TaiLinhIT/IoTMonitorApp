@@ -2,6 +2,7 @@
 using IoTMonitorApp.API.Data;
 using IoTMonitorApp.API.Dto.Auth.Login;
 using IoTMonitorApp.API.Dto.Auth.Register;
+using IoTMonitorApp.API.Dto.User;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -50,27 +51,54 @@ namespace IoTMonitorApp.API.Services
             await _db.SaveChangesAsync();
         }
 
-        // ✅ Login Google
-        public async Task<(string token, User user)> HandleGoogleLoginAsync(GoogleJsonWebSignature.Payload payload)
+        public async Task<(string token, UserDto user)> HandleGoogleLoginAsync(GoogleJsonWebSignature.Payload payload)
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == payload.Email);
 
             if (user == null)
             {
-                user = new User
+                try
                 {
-                    Email = payload.Email,
-                    FullName = payload.Name,
-                    PasswordHash = "" // user Google -> chưa có password
-                };
+                    user = new User
+                    {
+                        Id = Guid.NewGuid(),
+                        Email = payload.Email,
+                        FullName = payload.Name,
+                        PhoneNumber = "027494234",
+                        RoleId = 1, // Admin
+                        AddressId = 1, // Default address
+                        Role = "Admin",
+                        AssignedDate = DateTime.UtcNow,
+                        BirthOfDate = DateTime.Now,
+                        PasswordHash = "" // user Google -> chưa có password
+                    };
 
-                _db.Users.Add(user);
-                await _db.SaveChangesAsync();
+                    _db.Users.Add(user);
+                    await _db.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+
+                    Console.WriteLine(ex.Message);
+                }
+
             }
 
             var token = _jwtService.GenerateJwtToken(user);
-            return (token, user);
+
+            // map User -> UserDto
+            var userDto = new UserDto
+            {
+                Email = user.Email,
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role,
+                PasswordHash = user.PasswordHash
+            };
+
+            return (token, userDto);
         }
+
 
         // ✅ Set password cho user Google sau này
         public async Task<bool> SetPasswordAsync(string email, string password)
