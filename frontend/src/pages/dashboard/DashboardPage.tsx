@@ -1,265 +1,114 @@
-import React from "react";
+import {
+  ShoppingBag,
+  Users,
+  DollarSign,
+  BarChart3,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
+// Dữ liệu mẫu doanh thu theo tháng
+const revenueData = [
+  { month: "Jan", revenue: 1200 },
+  { month: "Feb", revenue: 2100 },
+  { month: "Mar", revenue: 800 },
+  { month: "Apr", revenue: 1600 },
+  { month: "May", revenue: 2500 },
+  { month: "Jun", revenue: 2000 },
+  { month: "Jul", revenue: 3100 },
+];
 
-const Dashboard: React.FC = () => {
-  const username = localStorage.getItem("username"); // hoặc lấy từ API
+const stats = [
+  {
+    label: "Sản phẩm",
+    value: 120,
+    icon: ShoppingBag,
+    color: "bg-blue-100 text-blue-600",
+  },
+  {
+    label: "Người dùng",
+    value: 58,
+    icon: Users,
+    color: "bg-green-100 text-green-600",
+  },
+  {
+    label: "Doanh thu",
+    value: "$12,500",
+    icon: DollarSign,
+    color: "bg-yellow-100 text-yellow-600",
+  },
+  {
+    label: "Đơn hàng",
+    value: 230,
+    icon: BarChart3,
+    color: "bg-purple-100 text-purple-600",
+  },
+];
 
+const DashboardPage = () => {
   return (
-    <main>
-      <header className="header fixed">
-        <div className="main-content">
-          <div className="body">
-            <img
-              src="/src/assets/img/logo.svg"
-              alt="Lessson."
-              className="logo"
-            />
-            <nav className="nav">
-              <ul>
-                <li className="active">
-                  <a href="#!">Home</a>
-                </li>
-                <li>
-                  <a href="#!">Courses</a>
-                </li>
-                <li>
-                  <a href="#!">Pricing</a>
-                </li>
-                <li>
-                  <a href="#!">Reviews</a>
-                </li>
-              </ul>
-            </nav>
-            <div className="action">
-              <a href="#!" className="btn btn-sign-up">
-                Sign Up
-              </a>
+    <div>
+      {/* Tiêu đề */}
+      <h1 className="text-2xl font-bold text-gray-700 mb-6">Dashboard</h1>
+
+      {/* Cards thống kê */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.label}
+              className="bg-white p-6 rounded-xl shadow hover:shadow-md transition"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">{stat.label}</p>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    {stat.value}
+                  </h2>
+                </div>
+                <div className={`p-3 rounded-full ${stat.color}`}>
+                  <Icon size={20} />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </header>
-      {/*Hero*/}
-      <div className="hero">
-        <div className="main-content">
-          <div className="body">
-            {/* Hero left */}
-            <div className="media-block">
-              <img
-                src="src/assets/img/hero-img.jpg"
-                alt="Learn without limits and spread knowledge."
-                className="img"
+          );
+        })}
+      </div>
+
+      {/* Biểu đồ doanh thu */}
+      <div className="mt-8 bg-white p-6 rounded-xl shadow">
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">
+          Thống kê doanh thu
+        </h2>
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={revenueData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="month" stroke="#6b7280" />
+              <YAxis stroke="#6b7280" />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
               />
-              <div className="hero-summary">
-                <div className="item">
-                  <div className="icon">
-                    <img src="src/assets/icons/list.svg" alt="" />
-                  </div>
-                  <div className="info">
-                    <p className="label">20 Courses</p>
-                    <p className="title">UI/UX Design</p>
-                  </div>
-                </div>
-                <div className="item">
-                  <div className="icon">
-                    <img src="src/assets/icons/code.svg" alt="" />
-                  </div>
-                  <div className="info">
-                    <p className="label">20 Courses</p>
-                    <p className="title">Development</p>
-                  </div>
-                </div>
-                <div className="item">
-                  <div className="icon">
-                    <img src="src/assets/icons/speaker.svg" alt="" />
-                  </div>
-                  <div className="info">
-                    <p className="label">30 Courses</p>
-                    <p className="title">Marketing</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Hero right */}
-            <div className="content-block">
-              <h1 className="heading lv1">
-                Learn without limits and spread knowledge.
-              </h1>
-              <p className="desc">
-                Build new skills for that “this is my year” feeling with
-                courses, certificates, and degrees from world-class universities
-                and companies.
-              </p>
-              <div className="cta-group">
-                <a href="#!" className="btn hero-cta">
-                  See Courses
-                </a>
-                <button className="watch-video">
-                  <div className="icon">
-                    <img src="src/assets/icons/play.svg" alt="" />
-                  </div>
-                  <span>Watch Video</span>
-                </button>
-              </div>
-              <p className="desc">Recent engagement</p>
-              <p className="desc stats">
-                <strong>50K</strong> Students
-                <strong>70+</strong> Courses
-              </p>
-            </div>
-          </div>
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
-      {/*popular*/}
-      <div className="popular">
-        <div className="main-content">
-          <div className="popular-top">
-            <div className="info">
-              <h2 className="heading lv2">Our popular courses</h2>
-              <p className="desc">
-                Build new skills with new trendy courses and shine for the next
-                future career.
-              </p>
-            </div>
-            <div className="controls">
-              <button className="control-btn">
-                <svg
-                  width="8"
-                  height="14"
-                  viewBox="0 0 8 14"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7 1L1 7L7 13"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
-              <button className="control-btn">
-                <svg
-                  width="8"
-                  height="14"
-                  viewBox="0 0 8 14"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M1 1L7 7L1 13"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="course-list">
-            {/* course item 1 */}
-            <div className="course-item">
-              <a href="#!">
-                <img
-                  src="src/assets/img/course-1.jpg"
-                  alt=""
-                  className="thumb"
-                />
-              </a>
-              <div className="info">
-                <div className="head">
-                  <h3 className="title">
-                    <a href="#!">Basic web design</a>
-                  </h3>
-                  <div className="rating">
-                    <img
-                      src="src/assets/icons/star.svg"
-                      alt="star"
-                      className="star"
-                    />
-                    <span className="value">4.5</span>
-                  </div>
-                </div>
-                <p className="desc">
-                  Get the best course, gain knowledge and shine for your future
-                  career.
-                </p>
-                <div className="foot">
-                  <span className="price">$120.75</span>
-                  <button className="btn book-btn">Book Now</button>
-                </div>
-              </div>
-            </div>
-            {/* course item 2 */}
-            <div className="course-item">
-              <a href="#!">
-                <img
-                  src="src/assets/img/course-2.jpg"
-                  alt=""
-                  className="thumb"
-                />
-              </a>
-              <div className="info">
-                <div className="head">
-                  <h3 className="title">
-                    <a href="#!">UI/UX design</a>
-                  </h3>
-                  <div className="rating">
-                    <img
-                      src="src/assets/icons/star.svg"
-                      alt="star"
-                      className="star"
-                    />
-                    <span className="value">4.5</span>
-                  </div>
-                </div>
-                <p className="desc">
-                  Get the best course, gain knowledge and shine for your future
-                  career.
-                </p>
-                <div className="foot">
-                  <span className="price">$120.75</span>
-                  <button className="btn book-btn">Book Now</button>
-                </div>
-              </div>
-            </div>
-            {/* course item 3 */}
-            <div className="course-item">
-              <a href="#!">
-                <img
-                  src="src/assets/img/course-3.jpg"
-                  alt=""
-                  className="thumb"
-                />
-              </a>
-              <div className="info">
-                <div className="head">
-                  <h3 className="title">
-                    <a href="#!">Web App design</a>
-                  </h3>
-                  <div className="rating">
-                    <img
-                      src="src/assets/icons/star.svg"
-                      alt="star"
-                      className="star"
-                    />
-                    <span className="value">4.5</span>
-                  </div>
-                </div>
-                <p className="desc">
-                  Get the best course, gain knowledge and shine for your future
-                  career.
-                </p>
-                <div className="foot">
-                  <span className="price">$120.75</span>
-                  <button className="btn book-btn">Book Now</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
+    </div>
   );
 };
 
-export default Dashboard;
+export default DashboardPage;

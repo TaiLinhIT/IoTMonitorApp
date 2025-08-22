@@ -35,8 +35,7 @@ namespace IoTMonitorApp.API.Services
             _dbContext.OrderItems.Add(entity);
             await _dbContext.SaveChangesAsync();
 
-            dto.Id = entity.Id;
-            return dto;
+            return MapToDto(entity);
         }
 
         public async Task<bool> UpdateAsync(OrderItemDto dto)
@@ -66,36 +65,40 @@ namespace IoTMonitorApp.API.Services
             return true;
         }
 
-        private static OrderItemDto MapToDto(OrderItem entity) => new OrderItemDto
-        {
-            Id = entity.Id,
-            OrderId = entity.OrderId,
-            ProductId = entity.ProductId,
-            ProductName = entity.ProductName,
-            Quantity = entity.Quantity,
-            UnitPrice = entity.UnitPrice,
-            Discount = entity.Discount,
-            TotalPrice = entity.TotalPrice,
-            Slug = entity.Slug,
-            CreatedDate = entity.CreatedDate,
-            UpdatedDate = entity.UpdatedDate,
-            IsDelete = entity.IsDelete
-        };
+        // ================== Helper mapping ==================
 
-        private static OrderItem MapToEntity(OrderItemDto dto) => new OrderItem
+        private static OrderItemDto MapToDto(OrderItem entity)
         {
-            Id = dto.Id,
-            OrderId = dto.OrderId,
-            ProductId = dto.ProductId,
-            ProductName = dto.ProductName,
-            Quantity = dto.Quantity,
-            UnitPrice = dto.UnitPrice,
-            Discount = dto.Discount,
-            TotalPrice = dto.TotalPrice,
-            Slug = dto.Slug,
-            CreatedDate = dto.CreatedDate,
-            UpdatedDate = dto.UpdatedDate,
-            IsDelete = dto.IsDelete
-        };
+            return new OrderItemDto
+            {
+                Id = entity.Id,
+                ProductId = entity.ProductId,
+                ProductName = entity.ProductName,
+                Quantity = entity.Quantity,
+                UnitPrice = entity.UnitPrice,
+                Discount = entity.Discount,
+                TotalPrice = entity.TotalPrice,
+                OrderId = entity.OrderId,
+                CreatedDate = entity.CreatedDate,
+                UpdatedDate = entity.UpdatedDate
+            };
+        }
+
+        private static OrderItem MapToEntity(OrderItemDto dto)
+        {
+            return new OrderItem
+            {
+                Id = dto.Id,
+                ProductId = dto.ProductId,
+                ProductName = dto.ProductName,
+                Quantity = dto.Quantity,
+                UnitPrice = dto.UnitPrice,
+                Discount = dto.Discount,
+                TotalPrice = dto.TotalPrice,
+                OrderId = dto.OrderId,
+                CreatedDate = dto.CreatedDate,
+                UpdatedDate = dto.UpdatedDate
+            };
+        }
     }
 }

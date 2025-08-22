@@ -1,7 +1,8 @@
-export type CartItem ={
-    Id:number;
-    ProductId:number;
-    CartId:number;
-    Quantity:number;
-    PriceAtTime: number;
-};
+export type CartItem = {
+    ProductId: string;
+    ProductName: string;
+    Price: number;
+    Quantity: number;
+    ImageUrl: string;
+  };
+  

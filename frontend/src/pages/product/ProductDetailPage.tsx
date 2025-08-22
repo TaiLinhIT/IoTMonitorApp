@@ -1,11 +1,10 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ProductDetailApi from "../../services/ProductDetailApi";
 import type { ProductDetail as ProductDetailModel } from "../../types/ProductDetail";
 import "../../assets/css/Product/productDetail.css";
-import { PATHS } from "../../routes/paths";
-import cartApi from "../../services/CartApi"; // 🔹 import cartApi để gọi giỏ hàng
-import { useNavigate } from "react-router-dom";
+import cartApi from "../../services/CartApi";
+import { useCart } from "../../contexts/CartContext"; // 🔹 lấy context
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -14,19 +13,19 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const { addToCartAndOpen } = useCart(); // 🔹 từ context
+
   useEffect(() => {
-    if (id) {
-      ProductDetailApi.getById(id)
-        .then((data) => {
-          setProduct(data);
-          // mặc định ảnh đầu tiên làm ảnh chính
-          if (data?.ProductUrl?.length > 0) {
-            setSelectedImage(data.ProductUrl[0]);
-          }
-        })
-        .catch((err) => console.error(err))
-        .finally(() => setLoading(false));
-    }
+    if (!id) return;
+    ProductDetailApi.getById(id)
+      .then((data) => {
+        setProduct(data);
+        if (data?.ProductUrl?.length > 0) {
+          setSelectedImage(data.ProductUrl[0]);
+        }
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
   }, [id]);
 
   const handleAddToCart = async () => {
@@ -36,15 +35,26 @@ const ProductDetail = () => {
       navigate("/login");
       return;
     }
-
+  
+    if (!product) return;
+  
     try {
       await cartApi.addItem(product.Id, 1);
-      alert("Đã thêm vào giỏ hàng");
+  
+      // 🔹 Vừa thêm giỏ hàng, vừa mở MiniCart
+      addToCartAndOpen({
+        id: product.Id,
+        name: product.Name,
+        price: product.Price,
+        image: selectedImage || product.ProductUrl[0],
+        quantity: 1,
+      });
     } catch (error) {
       console.error("Lỗi thêm giỏ hàng:", error);
       alert("Không thể thêm sản phẩm vào giỏ hàng");
     }
   };
+  
 
   if (loading) return <p>Đang tải sản phẩm...</p>;
   if (!product) return <p>Không tìm thấy sản phẩm</p>;

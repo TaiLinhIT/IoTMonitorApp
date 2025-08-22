@@ -11,7 +11,8 @@ const cartApi = {
     axiosClient.put("/Cart/update", { productId, quantity }),
 
   removeItem: (productId: string): Promise<Cart> =>
-    axiosClient.delete("/Cart/remove", { data: { productId } }),
+    axiosClient.delete(`/Cart/remove?productId=${productId}`),
+  
 
   clear: (): Promise<boolean> => axiosClient.delete("/cart/clear"),
 };

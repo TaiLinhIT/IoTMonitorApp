@@ -1,8 +1,6 @@
 export type Cart = {
   Id: number;
-  UserId: Guid;
-  IsCheckedOut: boolean;
-  CreatedDate: Date;
-  UpdatedDate: Date;
-  IsDeleted: boolean;
+  UserId: string;
+  Items: CartItem[];
+  TotalPrice: number;
 };

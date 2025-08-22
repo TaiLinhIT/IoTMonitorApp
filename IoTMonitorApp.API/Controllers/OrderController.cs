@@ -34,11 +34,18 @@ namespace IoTMonitorApp.API.Controllers
 
         // POST: api/order
         [HttpPost]
-        public async Task<IActionResult> Create(OrderDto dto)
+        public async Task<IActionResult> Create(OrderCreateDto dto)
         {
             var createdOrder = await _orderService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = createdOrder.Id }, createdOrder);
+
+            // giả sử CreateAsync trả về OrderDto sau khi tạo thành công
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = createdOrder.Id },
+                createdOrder
+            );
         }
+
 
         // PUT: api/order/{id}
         [HttpPut("{id}")]

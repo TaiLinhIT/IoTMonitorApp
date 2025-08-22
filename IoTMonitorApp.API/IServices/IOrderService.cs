@@ -6,7 +6,7 @@ namespace IoTMonitorApp.API.IServices
     {
         Task<IEnumerable<OrderDto>> GetAllAsync();
         Task<OrderDto?> GetByIdAsync(int id);
-        Task<OrderDto> CreateAsync(OrderDto dto);
+        Task<OrderDto> CreateAsync(OrderCreateDto dto);
         Task<bool> UpdateAsync(OrderDto dto);
         Task<bool> DeleteAsync(int id);
     }
