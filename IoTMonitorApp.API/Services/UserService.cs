@@ -78,7 +78,6 @@ namespace IoTMonitorApp.API.Services
                 userFind.FullName = user.FullName;
                 userFind.Email = user.Email;
                 userFind.ImageUrl = user.ImageUrl;
-                userFind.Role = user.Role;
                 userFind.UpdatedDate = DateTime.UtcNow;
                 await _dbContext.SaveChangesAsync();
                 return "Update successful";

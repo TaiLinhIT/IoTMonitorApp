@@ -66,61 +66,71 @@ namespace IoTMonitorApp.API.Services
 
         public async Task<OrderDto> CreateAsync(OrderCreateDto dto)
         {
-            // 1. Tạo mới Order
-            var order = new Order
+            try
             {
-                UserId = dto.UserId,
-                CreatedDate = DateTime.UtcNow,
-                TotalAmount = 0 // sẽ tính sau
-            };
-
-            _dbContext.Orders.Add(order);
-            await _dbContext.SaveChangesAsync(); // Lưu trước để có OrderId
-
-            decimal totalAmount = 0;
-
-            // 2. Thêm OrderItems từ DTO
-            foreach (var item in dto.Items)
-            {
-                // Lấy giá sản phẩm từ DB
-                var product = await _dbContext.Products.FindAsync(item.ProductId);
-                if (product == null)
-                    throw new Exception($"Product {item.ProductId} not found");
-
-                var orderItem = new OrderItem
+                // 1. Tạo mới Order
+                var order = new Order
                 {
-                    OrderId = order.Id,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    UnitPrice = product.Price
+                    UserId = dto.UserId,
+                    CreatedDate = DateTime.UtcNow,
+                    TotalAmount = 0 // sẽ tính sau
                 };
 
-                totalAmount += product.Price * item.Quantity;
+                _dbContext.Orders.Add(order);
+                await _dbContext.SaveChangesAsync(); // Lưu trước để có OrderId
 
-                _dbContext.OrderItems.Add(orderItem);
+                decimal totalAmount = 0;
+
+                // 2. Thêm OrderItems từ DTO
+                foreach (var item in dto.Items)
+                {
+                    // Lấy giá sản phẩm từ DB
+                    var product = await _dbContext.Products.FindAsync(item.ProductId);
+                    if (product == null)
+                        throw new Exception($"Product {item.ProductId} not found");
+
+                    var orderItem = new OrderItem
+                    {
+                        OrderId = order.Id,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        UnitPrice = product.Price
+                    };
+
+                    totalAmount += product.Price * item.Quantity;
+
+                    _dbContext.OrderItems.Add(orderItem);
+                }
+
+                // 3. Cập nhật tổng tiền
+                order.TotalAmount = totalAmount;
+                _dbContext.Orders.Update(order);
+                await _dbContext.SaveChangesAsync();
+
+                // 4. Map sang DTO trả về
+                var orderDto = new OrderDto
+                {
+                    Id = order.Id,
+                    UserId = order.UserId,
+                    TotalAmount = order.TotalAmount,
+                    CreatedDate = order.CreatedDate,
+                    Items = dto.Items.Select(x => new OrderItemDto
+                    {
+                        ProductId = x.ProductId,
+                        Quantity = x.Quantity,
+                        UnitPrice = _dbContext.Products.First(p => p.Id == x.ProductId).Price
+                    }).ToList()
+                };
+
+                return orderDto;
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+                return null; // Hoặc ném ngoại lệ tùy ý
             }
 
-            // 3. Cập nhật tổng tiền
-            order.TotalAmount = totalAmount;
-            _dbContext.Orders.Update(order);
-            await _dbContext.SaveChangesAsync();
-
-            // 4. Map sang DTO trả về
-            var orderDto = new OrderDto
-            {
-                Id = order.Id,
-                UserId = order.UserId,
-                TotalAmount = order.TotalAmount,
-                CreatedDate = order.CreatedDate,
-                Items = dto.Items.Select(x => new OrderItemDto
-                {
-                    ProductId = x.ProductId,
-                    Quantity = x.Quantity,
-                    UnitPrice = _dbContext.Products.First(p => p.Id == x.ProductId).Price
-                }).ToList()
-            };
-
-            return orderDto;
         }
 
     }

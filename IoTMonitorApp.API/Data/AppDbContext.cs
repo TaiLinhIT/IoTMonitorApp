@@ -23,6 +23,8 @@ namespace IoTMonitorApp.API.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<Shipment> Shipments { get; set; }
         public DbSet<Specification> Specifications { get; set; }
+        public DbSet<CheckoutDraft> CheckoutDrafts { get; set; }
+        public DbSet<CheckoutDraftItem> CheckoutDraftItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Product>()

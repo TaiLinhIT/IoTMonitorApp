@@ -9,7 +9,10 @@ namespace IoTMonitorApp.API.Models
         [Key]
         public Guid Id { get; set; }
         public int RoleId { get; set; }
-        public int AddressId { get; set; }
+        public string? StreetAddress { get; set; }
+        public string? City { get; set; }
+        public string? Country { get; set; }
+
         public DateTime? BirthOfDate { get; set; }
         public DateTime? AssignedDate { get; set; }
         public string? GoogleId { get; set; }
@@ -17,8 +20,7 @@ namespace IoTMonitorApp.API.Models
         [Required]
         public string? PhoneNumber { get; set; }
         public string FullName { get; set; }
-        public string PasswordHash { get; set; }
-        public string Role { get; set; }
+        public string? PasswordHash { get; set; }
         public string? ImageUrl { get; set; }
 
     }

@@ -1,4 +1,14 @@
 // src/types/Order.ts
+// Chỉ giữ đúng các field backend cần
+export interface OrderItemCreate {
+  productId: string;   // Guid dưới dạng string
+  quantity: number;
+}
+
+export interface OrderCreate {
+  userId: number;
+  items: OrderItemCreate[];
+}
 
 export interface OrderItem {
   productId: number;

@@ -1,45 +1,85 @@
-// src/API/axiosClient.ts
+// api/axiosPrivate.ts
 import axios from "axios";
 
-const axiosClient = axios.create({
-  baseURL: "http://localhost:5039/api", // backend API
-  headers: {
-    "Content-Type": "application/json",
-  },
+const privateApi = axios.create({
+  baseURL: "http://localhost:5039/api",
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });
 
-//  Interceptor Request: Thêm token vào header
-axiosClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// instance riêng cho refresh
+const axiosBase = axios.create({
+  baseURL: "http://localhost:5039/api",
+  withCredentials: true,
+});
 
-//  Interceptor Response: Lấy data trực tiếp + xử lý lỗi
-axiosClient.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    if (!error.response) {
-      console.error("Network or CORS error:", error);
-      alert("Không thể kết nối tới server. Kiểm tra backend hoặc CORS.");
-    } else if (error.response.status === 401) {
-      console.warn("Token hết hạn hoặc chưa đăng nhập");
-      localStorage.removeItem("accessToken");
-      //  chỉ redirect nếu bạn chắc chắn đang ở flow login
-      window.location.href = "/login"; 
-    } else if (error.response.status === 403) {
-      alert("Bạn không có quyền truy cập.");
-    } else {
-      console.error("API Error:", error.response);
+let isRefreshing = false;
+let subscribers: ((token: string) => void)[] = [];
+
+function onRefreshed(token: string) {
+  subscribers.forEach((cb) => cb(token));
+  subscribers = [];
+}
+
+privateApi.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem("accessToken");
+  const csrfToken = sessionStorage.getItem("csrfToken");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  if (csrfToken) {
+    config.headers["X-CSRF-Token"] = csrfToken;
+  }
+
+  return config;
+});
+
+privateApi.interceptors.response.use(
+  (res) => res, // giữ nguyên full response
+  async (error) => {
+    const originalRequest: any = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribers.push((token: string) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(privateApi(originalRequest));
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const csrfToken = sessionStorage.getItem("csrfToken");
+        const res = await axiosBase.post(
+          "/auth/refresh",
+          {},
+          { headers: csrfToken ? { "X-CSRF-Token": csrfToken } : {} }
+        );
+
+        const newToken = res.data.accessToken;
+        sessionStorage.setItem("accessToken", newToken);
+
+        if (res.data.csrfToken) {
+          sessionStorage.setItem("csrfToken", res.data.csrfToken);
+        }
+
+        onRefreshed(newToken);
+        return privateApi(originalRequest);
+      } catch (err) {
+        // có thể gọi navigate("/login") nếu dùng react-router
+        window.location.href = "/login";
+      } finally {
+        isRefreshing = false;
+      }
     }
+
     return Promise.reject(error);
   }
 );
 
-export default axiosClient;
+export default privateApi;

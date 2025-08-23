@@ -7,6 +7,7 @@ import Register from "../pages/auth/RegisterPage";
 import ProductList from "../pages/product/ProductListPage";
 import ProductDetail from "../pages/product/ProductDetailPage";
 import Cart from "../pages/cart/CartPage";
+import Checkout from "../pages/checkout/CheckoutPage";
 import Forbidden from "../pages/error/ForbiddenPage";
 import PageNotFound from "../pages/error/PageNotFoundPage";
 import PrivateRoute from "../components/PrivateRoute";
@@ -65,6 +66,18 @@ export const routes = [
           </ErrorBoundary>
         ),
       },
+      {
+        path: PATHS.checkout,
+        element:(
+          <ErrorBoundary>
+            <PrivateRoute>
+              <RoleRoute allowedRoles={["Admin", "User"]}>
+                <Checkout />
+              </RoleRoute>
+            </PrivateRoute>
+          </ErrorBoundary>
+        )
+      }
     ],
   },
 

@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Auth;
 using IoTMonitorApp.API.Data;
+using IoTMonitorApp.API.Dto.Auth;
 using IoTMonitorApp.API.Dto.Auth.Login;
 using IoTMonitorApp.API.Dto.Auth.Register;
 using IoTMonitorApp.API.Dto.User;
@@ -66,8 +67,6 @@ namespace IoTMonitorApp.API.Services
                         FullName = payload.Name,
                         PhoneNumber = "027494234",
                         RoleId = 1, // Admin
-                        AddressId = 1, // Default address
-                        Role = "Admin",
                         AssignedDate = DateTime.UtcNow,
                         BirthOfDate = DateTime.Now,
                         PasswordHash = "" // user Google -> chưa có password
@@ -92,7 +91,6 @@ namespace IoTMonitorApp.API.Services
                 Email = user.Email,
                 FullName = user.FullName,
                 PhoneNumber = user.PhoneNumber,
-                Role = user.Role,
                 PasswordHash = user.PasswordHash
             };
 
@@ -117,6 +115,20 @@ namespace IoTMonitorApp.API.Services
             using var sha256 = SHA256.Create();
             var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
             return Convert.ToBase64String(bytes);
+        }
+
+        public Task<AuthResultDto?> RefreshTokenAsync(string refreshToken, string csrfToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public class CsrfService
+        {
+            public string GenerateToken()
+            {
+                var bytes = RandomNumberGenerator.GetBytes(32);
+                return Convert.ToBase64String(bytes);
+            }
         }
     }
 }

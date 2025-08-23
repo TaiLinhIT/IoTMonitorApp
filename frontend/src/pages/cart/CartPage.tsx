@@ -5,8 +5,86 @@ import type { Cart } from "../../types/Cart";
 import type { CartItem } from "../../types/CartItem";
 import TrashIcon from "/assets/icons/trash.svg";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import checkoutApi from "../../services/CheckoutApi";
 
-// Row sản phẩm, memo để giảm re-render
+/* -------------------- CheckoutModal -------------------- */
+interface CheckoutModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  totalPrice: number;
+}
+
+const CheckoutModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  totalPrice,
+}: CheckoutModalProps) => {
+  if (!isOpen) return null;
+
+  return (
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <motion.div
+        className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-lg"
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <h2 className="text-xl font-bold mb-4">Xác nhận đơn hàng</h2>
+
+        {/* Địa chỉ nhận hàng */}
+        <div className="mb-4">
+          <label className="block font-medium">Địa chỉ nhận hàng</label>
+          <input
+            type="text"
+            placeholder="Nhập địa chỉ"
+            className="w-full border rounded-lg p-2 mt-1"
+          />
+        </div>
+
+        {/* Phương thức thanh toán */}
+        <div className="mb-4">
+          <label className="block font-medium">Phương thức thanh toán</label>
+          <select className="w-full border rounded-lg p-2 mt-1">
+            <option>Thanh toán khi nhận hàng</option>
+            <option>Chuyển khoản ngân hàng</option>
+            <option>Ví MoMo</option>
+          </select>
+        </div>
+
+        {/* Tổng tiền */}
+        <div className="flex justify-between font-semibold text-lg border-t pt-2 mb-4">
+          <span>Cần thanh toán:</span>
+          <span>{totalPrice.toLocaleString("vi-VN")}₫</span>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-900"
+          >
+            Xác nhận đặt hàng
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+/* -------------------- CartItemRow -------------------- */
 interface CartItemRowProps {
   item: CartItem;
   selected: boolean;
@@ -17,18 +95,25 @@ interface CartItemRowProps {
 }
 
 const CartItemRow = memo(
-  ({ item, selected, onSelect, onIncrease, onDecrease, onRemove }: CartItemRowProps) => {
+  ({
+    item,
+    selected,
+    onSelect,
+    onIncrease,
+    onDecrease,
+    onRemove,
+  }: CartItemRowProps) => {
     return (
       <motion.div
         layout
-        onClick={() => onSelect(item.ProductId)} // click vào row => toggle select
+        onClick={() => onSelect(item.ProductId)}
         className={`flex items-center bg-white shadow-md rounded-xl p-4 transition-colors cursor-pointer ${
           selected ? "bg-gray-100" : "hover:bg-gray-50"
         }`}
-        initial={{ opacity: 0, x: 50 }}         // hiệu ứng khi mount
-        animate={{ opacity: 1, x: 0 }}          // hiệu ứng khi hiện
-        exit={{ opacity: 0, x: -100 }}          // hiệu ứng khi xóa
-        transition={{ duration: 0.3 }}          // tốc độ
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -100 }}
+        transition={{ duration: 0.3 }}
       >
         <input
           type="checkbox"
@@ -93,13 +178,16 @@ const CartItemRow = memo(
   }
 );
 
-
+/* -------------------- Cart -------------------- */
 const Cart = () => {
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Lấy giỏ hàng
   useEffect(() => {
     const fetchCart = async () => {
@@ -116,14 +204,14 @@ const Cart = () => {
     fetchCart();
   }, []);
 
-  // Chọn/bỏ chọn từng item
   const handleSelectItem = useCallback((productId: string) => {
     setSelectedItems((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
     );
   }, []);
 
-  // Chọn tất cả
   const handleSelectAll = useCallback(() => {
     if (selectAll) {
       setSelectedItems([]);
@@ -133,13 +221,14 @@ const Cart = () => {
     setSelectAll(!selectAll);
   }, [selectAll, cartItems]);
 
-  // Tăng giảm số lượng
   const handleIncrease = useCallback(async (item: CartItem) => {
     const newQuantity = item.Quantity + 1;
     try {
       await cartApi.updateItem(item.ProductId, newQuantity);
       setCartItems((prev) =>
-        prev.map((p) => (p.ProductId === item.ProductId ? { ...p, Quantity: newQuantity } : p))
+        prev.map((p) =>
+          p.ProductId === item.ProductId ? { ...p, Quantity: newQuantity } : p
+        )
       );
     } catch (error) {
       console.error("Lỗi update số lượng:", error);
@@ -151,7 +240,9 @@ const Cart = () => {
     try {
       await cartApi.updateItem(item.ProductId, newQuantity);
       setCartItems((prev) =>
-        prev.map((p) => (p.ProductId === item.ProductId ? { ...p, Quantity: newQuantity } : p))
+        prev.map((p) =>
+          p.ProductId === item.ProductId ? { ...p, Quantity: newQuantity } : p
+        )
       );
     } catch (error) {
       console.error("Lỗi update số lượng:", error);
@@ -170,38 +261,52 @@ const Cart = () => {
 
   const handleCheckout = async () => {
     if (selectedItems.length === 0) return;
-
+  
+    const itemsToOrder = cartItems.filter((item) =>
+      selectedItems.includes(item.ProductId)
+    );
+  
+    // Payload KHÔNG có userId
+    const payload = {
+      totalPrice: totalPrice,
+      items: itemsToOrder.map((item) => ({
+        productId: item.ProductId,
+        quantity: item.Quantity,
+        price: item.Price,
+      })),
+    };
+  
+    try {
+      const response = await checkoutApi.createDraft(payload);
+  
+      navigate(`/checkout`);
+    } catch (error) {
+      console.error("Tạo CheckoutDraft thất bại:", error);
+      alert("Không thể tiến hành thanh toán. Vui lòng thử lại.");
+    }
+  };
+  
+  // Người dùng xác nhận trong modal => gọi API
+  const handleConfirmOrder = async () => {
     try {
       setIsCheckingOut(true);
 
-      // Lấy danh sách item được chọn
       const itemsToOrder = cartItems.filter((item) =>
         selectedItems.includes(item.ProductId)
       );
 
-      // Chuẩn bị payload gửi API tạo Order
       const payload = {
-        userId: 1, // hoặc lấy từ localStorage / context
-        status: "pending",
-        totalAmount: itemsToOrder.reduce(
-          (sum, item) => sum + item.Price * item.Quantity,
-          0
-        ),
+        userId: 1,
         items: itemsToOrder.map((item) => ({
-          productId: Number(item.ProductId),
-          productName: item.ProductName,
+          productId: item.ProductId,
           quantity: item.Quantity,
-          price: item.Price,
-          total: item.Price * item.Quantity,
         })),
       };
 
-      const order = await orderApi.create(payload); // gọi API tạo đơn hàng
-      console.log("Đơn hàng đã tạo:", order);
+      const order = await orderApi.create(payload);
 
       alert("Thanh toán thành công! Mã đơn #" + order.id);
 
-      // ✅ Xóa các item đã chọn khỏi giỏ hàng
       setCartItems((prev) =>
         prev.filter((item) => !selectedItems.includes(item.ProductId))
       );
@@ -212,10 +317,10 @@ const Cart = () => {
       alert("Thanh toán thất bại. Vui lòng thử lại.");
     } finally {
       setIsCheckingOut(false);
+      setIsModalOpen(false);
     }
   };
 
-  // Tổng tiền tính nhanh với useMemo
   const totalPrice = useMemo(() => {
     return cartItems
       .filter((item) => selectedItems.includes(item.ProductId))
@@ -226,7 +331,10 @@ const Cart = () => {
     return (
       <div className="space-y-4 p-4 lg:p-10">
         {[...Array(3)].map((_, idx) => (
-          <div key={idx} className="h-28 bg-gray-200 rounded-xl animate-pulse"></div>
+          <div
+            key={idx}
+            className="h-28 bg-gray-200 rounded-xl animate-pulse"
+          ></div>
         ))}
       </div>
     );
@@ -264,50 +372,60 @@ const Cart = () => {
         </AnimatePresence>
       </div>
 
-
       {/* Thanh toán */}
       <motion.div
         layout
-        className="lg:w-96 mt-6 lg:mt-0 bg-white shadow-xl rounded-2xl p-6 flex flex-col space-y-4 sticky top-4"
+        className="lg:w-96 mt-6 lg:mt-0 bg-gradient-to-b from-white to-gray-50 shadow-2xl rounded-3xl p-8 flex flex-col space-y-6 sticky top-6"
       >
-        <h3 className="text-2xl font-bold border-b pb-2">Thông tin đơn hàng</h3>
-        <div className="flex justify-between text-gray-600">
-          <span>Tổng tiền ({selectedItems.length} sản phẩm)</span>
-          <motion.span
-            key={totalPrice}
-            initial={{ opacity: 0.5, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.25 }}
-          >
-            {totalPrice.toLocaleString("vi-VN")}₫
-          </motion.span>
+        <h3 className="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-2">
+          🛍️ Thanh toán
+        </h3>
+
+        <div className="space-y-3 text-gray-700">
+          <div className="flex justify-between">
+            <span className="text-sm">
+              Tổng tiền ({selectedItems.length} sản phẩm)
+            </span>
+            <motion.span
+              key={totalPrice}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+              className="font-medium"
+            >
+              {totalPrice.toLocaleString("vi-VN")}₫
+            </motion.span>
+          </div>
+
+          <div className="flex justify-between text-sm text-gray-500">
+            <span>Khuyến mãi</span>
+            <span>0₫</span>
+          </div>
         </div>
-        <div className="flex justify-between text-gray-600">
-          <span>Khuyến mãi</span>
-          <span>0₫</span>
-        </div>
-        <div className="flex justify-between font-bold text-xl border-t pt-2">
-          <span>Cần thanh toán</span>
+
+        <div className="flex justify-between items-center border-t border-gray-200 pt-4">
+          <span className="text-lg font-semibold">Cần thanh toán</span>
           <motion.span
             key={totalPrice + "-final"}
-            initial={{ opacity: 0.5, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.25 }}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-2xl font-bold bg-gradient-to-r from-black to-gray-800 bg-clip-text text-transparent"
           >
             {totalPrice.toLocaleString("vi-VN")}₫
           </motion.span>
         </div>
-        {/* ... */}
+
         <button
           disabled={selectedItems.length === 0 || isCheckingOut}
           onClick={handleCheckout}
-          className={`mt-4 w-full py-3 rounded-xl font-semibold text-lg transition ${
+          className={`w-full py-4 rounded-2xl font-bold text-lg tracking-wide transition-all duration-300 ${
             selectedItems.length > 0 && !isCheckingOut
-              ? "bg-black text-white hover:bg-gray-900"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              ? "bg-black text-white hover:scale-[1.02] hover:shadow-lg active:scale-95"
+              : "bg-gray-200 text-gray-500 cursor-not-allowed"
           }`}
         >
-          {isCheckingOut ? "Đang xử lý..." : "Thanh toán"}
+          {isCheckingOut ? "Đang xử lý..." : "Thanh toán ngay"}
         </button>
       </motion.div>
     </div>

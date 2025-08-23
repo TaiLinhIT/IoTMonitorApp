@@ -1,11 +1,11 @@
-﻿using IoTMonitorApp.API.Dto.Auth.Login;
-using IoTMonitorApp.API.Dto.Auth.Register;
+﻿using IoTMonitorApp.API.Dto.Auth.Register;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using static IoTMonitorApp.API.Services.AuthService;
 
 namespace IoTMonitorApp.API.Controllers
 {
@@ -16,28 +16,62 @@ namespace IoTMonitorApp.API.Controllers
         private readonly IConfiguration _config;
         private readonly IAuthService _authService;
         private readonly IJwtService _jwtService;
+        private readonly CsrfService _csrfService;
 
-        public AuthController(IConfiguration config, IAuthService authService, IJwtService jwtService)
+        public AuthController(IConfiguration config, IAuthService authService, IJwtService jwtService, CsrfService csrfService)
         {
             _config = config;
             _authService = authService;
             _jwtService = jwtService;
+            _csrfService = csrfService;
         }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh()
+        {
+            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+                return Unauthorized(new { message = "Missing refresh token" });
+
+            var csrfHeader = Request.Headers["X-CSRF-Token"].FirstOrDefault();
+            if (csrfHeader == null)
+                return Unauthorized(new { message = "Missing CSRF token" });
+
+            var result = await _authService.RefreshTokenAsync(refreshToken, csrfHeader);
+            if (result == null)
+                return Unauthorized(new { message = "Invalid token" });
+
+            return Ok(new
+            {
+                accessToken = result.AccessToken,
+                csrfToken = result.CsrfToken
+            });
+        }
+
 
         // ---------------- Email + Password ----------------
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] CreateLoginDto dto)
+        public IActionResult Login([FromBody] Dto.Auth.LoginRequest request)
         {
-            try
+            // 🔹 Thực tế bạn sẽ check username/password tại đây
+            if (request.Username == "admin" && request.Password == "123456")
             {
-                var token = await _authService.LoginAsync(dto);
-                return Ok(token);
+                // Phát CSRF token
+                var csrfToken = _csrfService.GenerateToken();
+
+                // Set cookie HttpOnly
+                Response.Cookies.Append("X-CSRF-TOKEN", csrfToken, new CookieOptions
+                {
+                    HttpOnly = false, // ❌ cần false để JS đọc gửi lại header
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict
+                });
+
+                return Ok(new { message = "Login success" });
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            return Unauthorized();
         }
+
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)

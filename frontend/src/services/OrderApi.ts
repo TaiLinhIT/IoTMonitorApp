@@ -1,5 +1,5 @@
 import axiosClient from "./axiosClient";
-import type { Order } from "../types/Order";
+import type { Order , OrderCreate, OrderItem } from "../types/Order";
 
 const orderApi = {
   getAll: (): Promise<Order[]> => {
@@ -10,7 +10,7 @@ const orderApi = {
     return axiosClient.get(`/Order/${id}`);
   },
 
-  create: (data: Omit<Order, "id" | "createdAt" | "updatedAt">): Promise<Order> => {
+  create: (data: OrderCreate): Promise<Order> => {
     return axiosClient.post("/Order", data);
   },
 
