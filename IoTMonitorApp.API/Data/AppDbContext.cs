@@ -25,6 +25,7 @@ namespace IoTMonitorApp.API.Data
         public DbSet<Specification> Specifications { get; set; }
         public DbSet<CheckoutDraft> CheckoutDrafts { get; set; }
         public DbSet<CheckoutDraftItem> CheckoutDraftItems { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Product>()

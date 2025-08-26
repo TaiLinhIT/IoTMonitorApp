@@ -29,4 +29,8 @@
     <PackageReference Include="TypeGen" Version="6.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Helper\" />
+  </ItemGroup>
+
 </Project>

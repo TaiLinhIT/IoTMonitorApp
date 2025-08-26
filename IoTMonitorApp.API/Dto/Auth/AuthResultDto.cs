@@ -2,8 +2,11 @@
 {
     public class AuthResultDto
     {
-        public string AccessToken { get; set; } = "";
+        public string Token { get; set; }
+        public string RefreshToken { get; set; }
+        public DateTime Expiry { get; set; }  // ✅ Thêm property này
         public string CsrfToken { get; set; } = "";
-        public string RefreshToken { get; set; } = ""; // dùng nội bộ để set Cookie
+        public string UserRole { get; set; } = "";//public string CsrfToken { get; set; } // Token chống CSRF
     }
+
 }

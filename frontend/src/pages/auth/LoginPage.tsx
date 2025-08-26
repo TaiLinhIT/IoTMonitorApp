@@ -17,10 +17,13 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const data = await authApi.login(email, password);
+      const response = await authApi.login(email, password);
+      const data = response.data; // đây mới là payload JSON
 
       localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("userRole", data.role);
+      localStorage.setItem("csrfToken", data.csrfToken);
+      localStorage.setItem("userRole", data.Role);
+
 
       navigate("/dashboard"); // chuyển hướng đến trang sản phẩm sau khi đăng nhập thành công
     } catch (err: any) {

@@ -1,6 +1,5 @@
 ﻿using IoTMonitorApp.API.Data;
 using IoTMonitorApp.API.IServices;
-using IoTMonitorApp.API.Middleware;
 using IoTMonitorApp.API.Services;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -56,7 +55,7 @@ namespace IoTMonitorApp.API
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("super_secret_key_12345")),
+                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
                     ClockSkew = TimeSpan.Zero
                 };
             })
@@ -80,6 +79,8 @@ namespace IoTMonitorApp.API
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<ICheckoutDraftService, CheckoutDraftService>();
             builder.Services.AddScoped<IJwtService, JwtService>();
+            builder.Services.AddScoped<CsrfService>();
+
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -121,7 +122,7 @@ namespace IoTMonitorApp.API
             app.UseCors("AllowLocalhost5173");
 
             app.UseSession();          // ✅ phải trước CSRF
-            app.UseCsrfMiddleware();   // ✅ CSRF check ở đây
+            //app.UseCsrfMiddleware();   // ✅ CSRF check ở đây
 
             app.UseAuthentication();   // JWT / Google
             app.UseAuthorization();

@@ -1,11 +1,11 @@
 ﻿using IoTMonitorApp.API.Dto.Auth.Register;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
+using IoTMonitorApp.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using static IoTMonitorApp.API.Services.AuthService;
 
 namespace IoTMonitorApp.API.Controllers
 {
@@ -13,19 +13,18 @@ namespace IoTMonitorApp.API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IConfiguration _config;
         private readonly IAuthService _authService;
         private readonly IJwtService _jwtService;
         private readonly CsrfService _csrfService;
 
-        public AuthController(IConfiguration config, IAuthService authService, IJwtService jwtService, CsrfService csrfService)
+        public AuthController(IAuthService authService, IJwtService jwtService, CsrfService csrfService)
         {
-            _config = config;
             _authService = authService;
             _jwtService = jwtService;
             _csrfService = csrfService;
         }
 
+        // ---------------- Refresh token ----------------
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh()
         {
@@ -40,39 +39,57 @@ namespace IoTMonitorApp.API.Controllers
             if (result == null)
                 return Unauthorized(new { message = "Invalid token" });
 
+            // Cập nhật lại cookie refresh token mới (HttpOnly)
+            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // chỉ gửi qua HTTPS
+                SameSite = SameSiteMode.Strict,
+                Expires = result.Expiry,
+            });
+
             return Ok(new
             {
-                accessToken = result.AccessToken,
+                accessToken = result.Token,
                 csrfToken = result.CsrfToken
             });
         }
 
-
-        // ---------------- Email + Password ----------------
+        // ---------------- Login với email + password ----------------
         [HttpPost("login")]
-        public IActionResult Login([FromBody] Dto.Auth.LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] Dto.Auth.Login.CreateLoginDto request)
         {
-            // 🔹 Thực tế bạn sẽ check username/password tại đây
-            if (request.Username == "admin" && request.Password == "123456")
+            try
             {
-                // Phát CSRF token
+                var authResult = await _authService.LoginAsync(request);
+
+                // Sinh refresh token và CSRF token
+                var refreshToken = Guid.NewGuid().ToString("N");
                 var csrfToken = _csrfService.GenerateToken();
 
-                // Set cookie HttpOnly
-                Response.Cookies.Append("X-CSRF-TOKEN", csrfToken, new CookieOptions
+                // Set refresh token cookie (HttpOnly)
+                Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
                 {
-                    HttpOnly = false, // ❌ cần false để JS đọc gửi lại header
+                    HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddDays(7)
                 });
 
-                return Ok(new { message = "Login success" });
+                return Ok(new
+                {
+                    accessToken = authResult.Token,
+                    csrfToken = authResult.CsrfToken,
+                    Role = authResult.UserRole
+                });
             }
-
-            return Unauthorized();
+            catch (Exception ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
         }
 
-
+        // ---------------- Đăng ký ----------------
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -87,7 +104,7 @@ namespace IoTMonitorApp.API.Controllers
             }
         }
 
-        // ---------------- Google Login (SPA flow) ----------------
+        // ---------------- Login Google ----------------
         [HttpPost("login-google")]
         public async Task<IActionResult> LoginGoogle([FromBody] GoogleLoginDto dto)
         {
@@ -95,16 +112,28 @@ namespace IoTMonitorApp.API.Controllers
             {
                 var payload = await Google.Apis.Auth.GoogleJsonWebSignature.ValidateAsync(dto.IdToken);
 
-                var (appToken, userDto) = await _authService.HandleGoogleLoginAsync(payload);
+                var (accessToken, userDto) = await _authService.HandleGoogleLoginAsync(payload);
+
+                // Sinh refresh token
+                var refreshToken = Guid.NewGuid().ToString("N");
+                Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddDays(7)
+                });
 
                 return Ok(new
                 {
-                    token = appToken,
-                    userDto.FullName,
-                    userDto.PhoneNumber,
-                    userDto.Email,
-                    userDto.Role,
-                    hasPassword = !string.IsNullOrEmpty(userDto.PasswordHash)
+                    accessToken,
+                    user = new
+                    {
+                        userDto.FullName,
+                        userDto.PhoneNumber,
+                        userDto.Email,
+                        userDto.Role
+                    }
                 });
             }
             catch (Exception ex)
@@ -113,7 +142,14 @@ namespace IoTMonitorApp.API.Controllers
             }
         }
 
-
+        // ---------------- Logout ----------------
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("refreshToken");
+            return Ok(new { message = "Đã đăng xuất." });
+        }
 
         // ---------------- Secure test ----------------
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]

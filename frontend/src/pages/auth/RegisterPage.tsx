@@ -17,7 +17,11 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      await authApi.register(email, fullName, password);
+      await authApi.register({
+        email,
+        fullName,
+        password,
+      });
       alert("Đăng ký thành công!");
       navigate("/login");
     } catch (error: any) {

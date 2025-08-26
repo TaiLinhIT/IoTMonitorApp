@@ -4,7 +4,7 @@ import axios from "axios";
 const privateApi = axios.create({
   baseURL: "http://localhost:5039/api",
   headers: { "Content-Type": "application/json" },
-  withCredentials: true,
+  withCredentials: true, // gửi kèm cookie (nếu có)
 });
 
 // instance riêng cho refresh
