@@ -13,9 +13,9 @@ const ProductList: React.FC = () => {
   useEffect(() => {
     productApi
       .getAll()
-      .then((data) => {
-        console.log("Sản phẩm:", data);
-        setProducts(data);
+      .then((response) => {
+        console.log("Sản phẩm:", response.data);
+        setProducts(response.data);
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));

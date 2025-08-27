@@ -8,6 +8,7 @@ using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using System.Text.Encodings.Web;
 
 namespace IoTMonitorApp.API.Services
 {
@@ -208,8 +209,8 @@ namespace IoTMonitorApp.API.Services
         #region Security Helpers
         private string Sanitize(string input)
         {
-            if (string.IsNullOrEmpty(input)) return input;
-            return input.Replace("<", "&lt;").Replace(">", "&gt;"); // chống XSS
+            return string.IsNullOrEmpty(input) ? input : HtmlEncoder.Default.Encode(input);
+
         }
 
 

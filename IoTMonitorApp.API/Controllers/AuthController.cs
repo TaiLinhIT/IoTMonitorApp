@@ -63,12 +63,11 @@ namespace IoTMonitorApp.API.Controllers
             {
                 var authResult = await _authService.LoginAsync(request);
 
-                // Sinh refresh token và CSRF token
-                var refreshToken = Guid.NewGuid().ToString("N");
+
                 var csrfToken = _csrfService.GenerateToken();
 
                 // Set refresh token cookie (HttpOnly)
-                Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                Response.Cookies.Append("refreshToken", authResult.RefreshToken, new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,

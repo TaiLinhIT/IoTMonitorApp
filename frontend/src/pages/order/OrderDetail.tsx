@@ -1,4 +1,4 @@
-import OrderItemList from "../components/OrderItemList";
+import OrderItemList from "./OrderItemList";
 
 const OrderDetail = () => {
   const orderId = 101; // ví dụ fix cứng, thực tế có thể lấy từ useParams() khi dùng React Router

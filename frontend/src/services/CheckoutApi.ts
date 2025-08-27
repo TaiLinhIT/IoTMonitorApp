@@ -1,5 +1,5 @@
 import axiosClient from "./axiosClient";
-import type { CreateCheckoutDraftPayload } from "../types/CreateCheckoutDraftPayload";
+import type { CreateCheckoutDraftPayload } from "../types/Checkout";
 
 const checkoutApi = {
   createDraft: (payload: CreateCheckoutDraftPayload) =>

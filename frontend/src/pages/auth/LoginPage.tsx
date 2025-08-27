@@ -3,12 +3,12 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authApi from "../../services/AuthApi";
 import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
-import axiosClient from "../../services/axiosClient";
-
-
+import { useAuth } from "../../contexts/AuthContext"; // ✅ import useAuth
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ lấy hàm login từ context
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,12 +20,10 @@ const Login = () => {
       const response = await authApi.login(email, password);
       const data = response.data; // đây mới là payload JSON
 
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("csrfToken", data.csrfToken);
-      localStorage.setItem("userRole", data.Role);
+      // ✅ Lưu vào memory qua context
+      login(data.accessToken, { role: data.Role });
 
-
-      navigate("/dashboard"); // chuyển hướng đến trang sản phẩm sau khi đăng nhập thành công
+      navigate("/dashboard"); 
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
     }
@@ -37,11 +35,11 @@ const Login = () => {
     if (!idToken) return;
 
     try {
-      const res = await authApi.loginGoogle(idToken); // gọi API qua authApi
+      const res = await authApi.loginGoogle(idToken);
       console.log("Google login response:", res);
-      localStorage.setItem("accessToken", res.token);
-      localStorage.setItem("userRole",res.Role);
-      
+
+      // ✅ Lưu vào memory
+      login(res.token, { role: res.Role });
 
       navigate("/products");
     } catch (err) {
@@ -54,11 +52,12 @@ const Login = () => {
     setError("Google login was cancelled or failed");
   };
 
-  const login = useGoogleLogin({
+  const googleLogin = useGoogleLogin({
     onSuccess: (response) => {
-      localStorage.setItem("accessToken", response?.access_token || "");
-      navigate(PATHS.dashboard);
+      login(response?.access_token || "", null); // lưu access token vào memory
+      navigate("/dashboard");
     },
+    onError: handleGoogleError,
   });
 
   return (
@@ -97,11 +96,10 @@ const Login = () => {
 
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
-          onError={() => setError("Google login failed")}
+          onError={handleGoogleError}
           logo_alignment="center"
           size="large"
         />
-
 
         <p className="text-sm text-center mt-4">
           Don't have an account?{" "}
