@@ -1,13 +1,13 @@
 // src/components/PrivateRoute.tsx
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { AuthStore } from "../contexts/AuthStore";
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
-   const token = localStorage.getItem("accessToken");
+  const isAuthenticated = AuthStore.getAccessToken() !== null;
 
-  // Kiểm tra xem người dùng đã đăng nhập hay chưa
-  if (!token) {
-    // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+  if (!isAuthenticated) {
+    // Nếu chưa đăng nhập → về trang login
     return <Navigate to="/login" replace />;
   }
 

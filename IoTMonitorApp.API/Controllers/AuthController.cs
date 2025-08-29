@@ -43,7 +43,7 @@ namespace IoTMonitorApp.API.Controllers
             Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true, // chỉ gửi qua HTTPS
+                Secure = false, // chỉ gửi qua HTTPS
                 SameSite = SameSiteMode.Strict,
                 Expires = result.Expiry,
             });
@@ -64,14 +64,12 @@ namespace IoTMonitorApp.API.Controllers
                 var authResult = await _authService.LoginAsync(request);
 
 
-                var csrfToken = _csrfService.GenerateToken();
-
                 // Set refresh token cookie (HttpOnly)
                 Response.Cookies.Append("refreshToken", authResult.RefreshToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    Secure = false, // dev HTTP thì false, deploy HTTPS thì true
+                    SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(7)
                 });
 

@@ -14,7 +14,6 @@ const ProductList: React.FC = () => {
     productApi
       .getAll()
       .then((response) => {
-        console.log("Sản phẩm:", response.data);
         setProducts(response.data);
       })
       .catch((err) => console.error(err))
@@ -26,7 +25,7 @@ const ProductList: React.FC = () => {
   return (
     <div className="product-list">
       {products.map((product) => (
-        <Link
+        <Link key={product.Id}
           to={generatePath(PATHS.productDetail, {
             slug: product.Slug,
             id: product.Id,

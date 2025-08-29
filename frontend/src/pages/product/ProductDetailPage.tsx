@@ -18,8 +18,9 @@ const ProductDetail = () => {
   useEffect(() => {
     if (!id) return;
     ProductDetailApi.getById(id)
-      .then((data) => {
-        setProduct(data);
+      .then((response) => {
+
+        setProduct(response.data);
         if (data?.ProductUrl?.length > 0) {
           setSelectedImage(data.ProductUrl[0]);
         }
@@ -29,12 +30,7 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      alert("Bạn cần đăng nhập trước khi thêm giỏ hàng");
-      navigate("/login");
-      return;
-    }
+    
   
     if (!product) return;
   
@@ -87,7 +83,7 @@ const ProductDetail = () => {
           <h3 className="heading">{product.Name}</h3>
           <p className="desc">{product.BrandName}</p>
           <span className="price">
-            {product.Price.toLocaleString("vi-VN")}₫
+            {product?.Price?.toLocaleString("vi-VN") ?? 'Chưa có giá'}₫
           </span>
         </div>
 

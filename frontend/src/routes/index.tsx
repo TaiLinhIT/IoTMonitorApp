@@ -22,25 +22,24 @@ export const routes = [
   { path: "/", element: <Navigate to={PATHS.home} replace /> },
 
   // Auth routes (không cần layout)
-  { path: PATHS.login, element: <Login /> },
-  { path: PATHS.register, element: <Register /> },
+  { path: PATHS.login, element: <Login />, requiresAuth: false },
+  { path: PATHS.register, element: <Register />, requiresAuth: false },
 
-  // User routes (dùng MainLayout)
+  // User routes
   {
-    element: <MainLayout />,   // 👈 tất cả children sẽ nằm trong layout
+    element: <MainLayout />,
     children: [
-      { path: PATHS.home, element: <Home /> },
+      { path: PATHS.home, element: <Home />, requiresAuth: false },
       {
         path: PATHS.products,
         element: (
           <ErrorBoundary>
-            <PrivateRoute>
-              <RoleRoute allowedRoles={["Admin", "User"]}>
-                <ProductList />
-              </RoleRoute>
-            </PrivateRoute>
+            <RoleRoute allowedRoles={["Admin", "User"]}>
+              <ProductList />
+            </RoleRoute>
           </ErrorBoundary>
         ),
+        requiresAuth: true,
       },
       {
         path: PATHS.productDetail,
@@ -53,6 +52,8 @@ export const routes = [
             </PrivateRoute>
           </ErrorBoundary>
         ),
+        requiresAuth: true,
+        requiresCsrf: true, // 👈 nếu bạn muốn bắt buộc CSRF
       },
       {
         path: PATHS.carts,
@@ -65,10 +66,12 @@ export const routes = [
             </PrivateRoute>
           </ErrorBoundary>
         ),
+        requiresAuth: true,
+        requiresCsrf: true,
       },
       {
         path: PATHS.checkout,
-        element:(
+        element: (
           <ErrorBoundary>
             <PrivateRoute>
               <RoleRoute allowedRoles={["Admin", "User"]}>
@@ -76,8 +79,10 @@ export const routes = [
               </RoleRoute>
             </PrivateRoute>
           </ErrorBoundary>
-        )
-      }
+        ),
+        requiresAuth: true,
+        requiresCsrf: true,
+      },
     ],
   },
 
@@ -87,18 +92,18 @@ export const routes = [
     element: (
       <PrivateRoute>
         <RoleRoute allowedRoles={["Admin"]}>
-          <AdminLayout />  {/* Layout riêng cho admin */}
+          <AdminLayout />
         </RoleRoute>
       </PrivateRoute>
     ),
+    requiresAuth: true,
     children: [
-      { index: true, element: <Dashboard /> },
-      { path: "users", element: <div>Quản lý user</div> },
-      // thêm các route quản trị khác ở đây
+      { index: true, element: <Dashboard />, requiresAuth: true },
+      { path: "users", element: <div>Quản lý user</div>, requiresAuth: true },
     ],
   },
 
   // Error routes
-  { path: "/403", element: <Forbidden /> },
-  { path: "*", element: <PageNotFound /> },
+  { path: "/403", element: <Forbidden />, requiresAuth: false },
+  { path: "*", element: <PageNotFound />, requiresAuth: false },
 ];

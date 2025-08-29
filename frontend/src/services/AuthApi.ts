@@ -2,17 +2,20 @@
 import axiosClient from "./axiosClient";
 
 const authApi = {
-  //Login thường
   login: (email: string, password: string) =>
     axiosClient.post("/Auth/login", { email, password }),
 
-  //Register
   register: (dto: { email: string; fullName: string; password: string }) =>
     axiosClient.post("/Auth/register", dto),
 
-  //Login Google (SPA flow: nhận idToken từ frontend)
   loginGoogle: (idToken: string) =>
     axiosClient.post("/Auth/login-google", { idToken }),
+
+  refresh: () =>
+    axiosClient.post("/Auth/refresh", {}, { withCredentials: true }),
+
+  logout: () =>
+    axiosClient.post("/Auth/logout", {}, { withCredentials: true }),
 };
 
 export default authApi;

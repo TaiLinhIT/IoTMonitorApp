@@ -28,15 +28,24 @@ namespace IoTMonitorApp.API.Controllers
             return Ok(cart);
         }
 
+        [Authorize] // cần JWT
         [HttpPost("add")]
         public async Task<IActionResult> AddItem([FromBody] AddToCartDto dto)
         {
+            var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            var csrfToken = HttpContext.Request.Headers["X-CSRF-Token"].FirstOrDefault();
+
+
+            // ✅ Lấy user từ JWT
             var userId = GetUserId();
             if (userId == null) return Unauthorized();
 
+            // ✅ Thêm giỏ hàng
             var cart = await _cartService.AddItemAsync(userId.Value, dto.ProductId, dto.Quantity);
             return Ok(cart);
         }
+
+
 
         [HttpPut("update")]
         public async Task<IActionResult> UpdateItem([FromBody] UpdateCartItemDto dto)

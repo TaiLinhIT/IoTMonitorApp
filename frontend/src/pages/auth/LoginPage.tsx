@@ -2,45 +2,46 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authApi from "../../services/AuthApi";
-import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
-import { useAuth } from "../../contexts/AuthContext"; // ✅ import useAuth
+import { GoogleLogin } from "@react-oauth/google";
+import { useAuth } from "../../contexts/AuthContext"; //import useAuth
+
+
+
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth(); // ✅ lấy hàm login từ context
+  const { setAuth } = useAuth(); //lấy hàm login từ context
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // ✅ Login bằng email/password
+  // Login bằng email/password
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await authApi.login(email, password);
-      const data = response.data; // đây mới là payload JSON
+      console.log("Login response:", response.data);
+      setAuth({
+        accessToken: response.data.accessToken,
+        csrfToken: response.data.csrfToken,
+        role: response.data.role,
+      });
 
-      // ✅ Lưu vào memory qua context
-      login(data.accessToken, { role: data.Role });
-
-      navigate("/dashboard"); 
+      navigate("/products"); 
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
     }
   };
 
-  // ✅ Login bằng Google OAuth
+  // Login bằng Google OAuth
   const handleGoogleSuccess = async (credentialResponse: any) => {
     const idToken = credentialResponse.credential;
     if (!idToken) return;
 
     try {
       const res = await authApi.loginGoogle(idToken);
-      console.log("Google login response:", res);
-
-      // ✅ Lưu vào memory
-      login(res.token, { role: res.Role });
-
+      
       navigate("/products");
     } catch (err) {
       console.error("Google login error:", err);
@@ -52,13 +53,7 @@ const Login = () => {
     setError("Google login was cancelled or failed");
   };
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: (response) => {
-      login(response?.access_token || "", null); // lưu access token vào memory
-      navigate("/dashboard");
-    },
-    onError: handleGoogleError,
-  });
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

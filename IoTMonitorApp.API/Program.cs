@@ -16,7 +16,7 @@ namespace IoTMonitorApp.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. Cấu hình CORS
+            // 1. Cấu hình CORS cho FE http://localhost:5173
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowLocalhost5173", policy =>
@@ -24,7 +24,7 @@ namespace IoTMonitorApp.API
                     policy.WithOrigins("http://localhost:5173")
                           .AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowCredentials();
+                          .AllowCredentials(); // ✅ quan trọng để cookie gửi đi
                 });
             });
 
@@ -44,21 +44,36 @@ namespace IoTMonitorApp.API
 
             builder.Services.AddAuthentication(options =>
             {
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddCookie("Cookies")
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-                    ClockSkew = TimeSpan.Zero
+                    ValidIssuer = builder.Configuration["Authentication:Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Authentication:Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(builder.Configuration["Authentication:Jwt:Key"])
+                    )
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine("JWT failed: " + context.Exception.Message);
+                        return Task.CompletedTask;
+                    }
                 };
             })
+
+
+
             .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
             {
                 options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
@@ -80,7 +95,6 @@ namespace IoTMonitorApp.API
             builder.Services.AddScoped<ICheckoutDraftService, CheckoutDraftService>();
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<CsrfService>();
-
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -104,7 +118,20 @@ namespace IoTMonitorApp.API
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
+
+                // ✅ dùng SecurePolicy thay vì Secure
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+                // nếu deploy HTTPS thì để CookieSecurePolicy.Always
             });
+
+            //CSRF
+            builder.Services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "X-CSRF-Token"; // 👈 trùng với frontend
+            });
+
+
 
             // 8. Swagger
             builder.Services.AddSwaggerGen();
@@ -121,8 +148,8 @@ namespace IoTMonitorApp.API
             app.UseHttpsRedirection();
             app.UseCors("AllowLocalhost5173");
 
-            app.UseSession();          // ✅ phải trước CSRF
-            //app.UseCsrfMiddleware();   // ✅ CSRF check ở đây
+            app.UseSession();          // ✅ phải trước Authentication
+            //app.UseCsrfMiddleware();   // Nếu bạn có custom CSRF middleware
 
             app.UseAuthentication();   // JWT / Google
             app.UseAuthorization();
