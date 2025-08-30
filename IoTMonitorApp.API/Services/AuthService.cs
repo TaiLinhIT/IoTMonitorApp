@@ -152,11 +152,12 @@ namespace IoTMonitorApp.API.Services
                 Token = accessToken,
                 RefreshToken = refreshToken,
                 Expiry = DateTime.UtcNow.AddMinutes(15),
-                CsrfToken = csrfToken,
-                UserRole = _db.Users.Join(_db.Roles, u => u.RoleId, r => r.Id, (u, r) => new { u, r })
-                                .Where(ur => ur.u.Id == user.Id)
-                                .Select(ur => ur.r.Name)
-                                .FirstOrDefault() ?? ""
+                CsrfToken = csrfToken
+                //,
+                //UserRole = _db.Users.Join(_db.Roles, u => u.RoleId, r => r.Id, (u, r) => new { u, r })
+                //                .Where(ur => ur.u.Id == user.Id)
+                //                .Select(ur => ur.r.Name)
+                //                .FirstOrDefault() ?? ""
             };
         }
 

@@ -77,7 +77,6 @@ namespace IoTMonitorApp.API.Controllers
                 {
                     accessToken = authResult.Token,
                     csrfToken = authResult.CsrfToken,
-                    Role = authResult.UserRole
                 });
             }
             catch (Exception ex)
