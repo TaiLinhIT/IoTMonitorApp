@@ -28,12 +28,12 @@ namespace IoTMonitorApp.API.Controllers
             return Ok(cart);
         }
 
+        //[Authorize] đảm bảo cho httpcontext isthenticated = true mới vào được
         [Authorize] // cần JWT
         [HttpPost("add")]
         public async Task<IActionResult> AddItem([FromBody] AddToCartDto dto)
         {
-            var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-            var csrfToken = HttpContext.Request.Headers["X-CSRF-Token"].FirstOrDefault();
+            //var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
 
 
             // ✅ Lấy user từ JWT
@@ -46,7 +46,7 @@ namespace IoTMonitorApp.API.Controllers
         }
 
 
-
+        [Authorize] // cần JWT
         [HttpPut("update")]
         public async Task<IActionResult> UpdateItem([FromBody] UpdateCartItemDto dto)
         {
@@ -57,6 +57,7 @@ namespace IoTMonitorApp.API.Controllers
             return Ok(cart);
         }
 
+        [Authorize] // cần JWT
         [HttpDelete("remove")]
         public async Task<IActionResult> RemoveItem([FromQuery] Guid productId)
         {
@@ -67,6 +68,7 @@ namespace IoTMonitorApp.API.Controllers
             return Ok(cart);
         }
 
+        [Authorize] // cần JWT
         [HttpDelete("clear")]
         public async Task<IActionResult> ClearCart()
         {
@@ -81,7 +83,6 @@ namespace IoTMonitorApp.API.Controllers
         {
             try
             {
-
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
                 return userIdClaim != null ? Guid.Parse(userIdClaim.Value) : (Guid?)null;
             }

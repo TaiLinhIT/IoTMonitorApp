@@ -39,7 +39,7 @@ export const routes = [
             </RoleRoute>
           </ErrorBoundary>
         ),
-        requiresAuth: true,
+        requiresAuth: false,
       },
       {
         path: PATHS.productDetail,
@@ -53,7 +53,7 @@ export const routes = [
           </ErrorBoundary>
         ),
         requiresAuth: true,
-        requiresCsrf: true, // 👈 nếu bạn muốn bắt buộc CSRF
+        // requiresCsrf: true, // 👈 nếu bạn muốn bắt buộc CSRF
       },
       {
         path: PATHS.carts,
@@ -67,7 +67,7 @@ export const routes = [
           </ErrorBoundary>
         ),
         requiresAuth: true,
-        requiresCsrf: true,
+        // requiresCsrf: true,
       },
       {
         path: PATHS.checkout,
@@ -81,7 +81,7 @@ export const routes = [
           </ErrorBoundary>
         ),
         requiresAuth: true,
-        requiresCsrf: true,
+        // requiresCsrf: true,
       },
     ],
   },

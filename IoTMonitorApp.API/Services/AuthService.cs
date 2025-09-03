@@ -131,8 +131,8 @@ namespace IoTMonitorApp.API.Services
             // 2. Sinh refresh token
             var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
-            // 3. Sinh CSRF token
-            var csrfToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+            //// 3. Sinh CSRF token
+            //var csrfToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
             // 4. Lưu refresh token vào DB
             var refresh = new RefreshToken
@@ -152,7 +152,7 @@ namespace IoTMonitorApp.API.Services
                 Token = accessToken,
                 RefreshToken = refreshToken,
                 Expiry = DateTime.UtcNow.AddMinutes(15),
-                CsrfToken = csrfToken
+                //CsrfToken = csrfToken
                 //,
                 //UserRole = _db.Users.Join(_db.Roles, u => u.RoleId, r => r.Id, (u, r) => new { u, r })
                 //                .Where(ur => ur.u.Id == user.Id)
@@ -165,7 +165,7 @@ namespace IoTMonitorApp.API.Services
         /// <summary>
         /// Làm mới Access Token bằng Refresh Token.
         /// </summary>
-        public async Task<AuthResultDto?> RefreshTokenAsync(string refreshToken, string csrfToken)
+        public async Task<AuthResultDto?> RefreshTokenAsync(string refreshToken)
         {
             var stored = await _db.RefreshTokens
                 .Include(r => r.User)

@@ -31,11 +31,9 @@ namespace IoTMonitorApp.API.Controllers
             if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
                 return Unauthorized(new { message = "Missing refresh token" });
 
-            var csrfHeader = Request.Headers["X-CSRF-Token"].FirstOrDefault();
-            if (csrfHeader == null)
-                return Unauthorized(new { message = "Missing CSRF token" });
 
-            var result = await _authService.RefreshTokenAsync(refreshToken, csrfHeader);
+
+            var result = await _authService.RefreshTokenAsync(refreshToken);
             if (result == null)
                 return Unauthorized(new { message = "Invalid token" });
 
@@ -44,14 +42,15 @@ namespace IoTMonitorApp.API.Controllers
             {
                 HttpOnly = true,
                 Secure = false, // chỉ gửi qua HTTPS
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.None, // QUAN TRỌNG: cho phép cross-site
+                Path = "/", // bắt buộc
                 Expires = result.Expiry,
             });
 
             return Ok(new
             {
                 accessToken = result.Token,
-                csrfToken = result.CsrfToken
+                //csrfToken = result.CsrfToken
             });
         }
 
@@ -70,13 +69,13 @@ namespace IoTMonitorApp.API.Controllers
                     HttpOnly = true,
                     Secure = false, // dev HTTP thì false, deploy HTTPS thì true
                     SameSite = SameSiteMode.None,
+                    Path = "/",
                     Expires = DateTime.UtcNow.AddDays(7)
                 });
 
                 return Ok(new
                 {
                     accessToken = authResult.Token,
-                    csrfToken = authResult.CsrfToken,
                 });
             }
             catch (Exception ex)

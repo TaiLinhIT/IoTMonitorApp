@@ -21,13 +21,11 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await authApi.login(email, password);
-      console.log("Login response:", response.data);
+      // console.log("Login response:", response.data);
       setAuth({
         accessToken: response.data.accessToken,
-        csrfToken: response.data.csrfToken,
-        role: response.data.role,
       });
-
+      
       navigate("/products"); 
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");

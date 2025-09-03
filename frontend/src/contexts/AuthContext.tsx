@@ -1,5 +1,6 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import axios from "axios";
 import { AuthStore } from "./AuthStore";
 
 type AuthContextType = {
@@ -21,20 +22,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAccessToken(accessToken);
     setCsrfToken(csrfToken);
     setRole(role);
-  
-    // đồng bộ ra ngoài
+
+    // đồng bộ ra ngoài (axiosClient hoặc store khác)
     AuthStore.setAuth({ accessToken, csrfToken, role });
   };
-  
+
   const clearAuth = () => {
     setAccessToken(null);
     setCsrfToken(null);
     setRole(null);
-  
+
     AuthStore.clearAuth();
   };
 
-  
+  // 🔑 Khi reload -> gọi /Auth/refresh để lấy token mới
+  useEffect(() => {
+    const tryRefresh = async () => {
+      try {
+        console.log("🔄 Đang thử refresh token...");
+
+        const res = await axios.post(
+          "http://localhost:5039/api/Auth/refresh",
+          {},
+          {
+            
+            withCredentials: true, // để gửi cookie refresh token
+          }
+        );
+
+        const { accessToken } = res.data;
+
+        setAuth({
+          accessToken,
+        });
+
+        
+
+        console.log("✅ Refresh thành công, accessToken mới:", accessToken);
+      } catch (err) {
+        console.warn("❌ Refresh thất bại, buộc logout:", err);
+        clearAuth();
+      }
+    };
+
+    tryRefresh();
+  }, []); // chỉ chạy khi app load lần đầu
 
   return (
     <AuthContext.Provider value={{ accessToken, csrfToken, role, setAuth, clearAuth }}>

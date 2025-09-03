@@ -10,6 +10,6 @@ public interface IAuthService
     Task RegisterAsync(RegisterDto dto);
     Task<(string token, UserDto user)> HandleGoogleLoginAsync(GoogleJsonWebSignature.Payload payload);
     Task<bool> SetPasswordAsync(string email, string password);
-    Task<AuthResultDto?> RefreshTokenAsync(string refreshToken, string csrfToken);
+    Task<AuthResultDto?> RefreshTokenAsync(string refreshToken);
 
 }

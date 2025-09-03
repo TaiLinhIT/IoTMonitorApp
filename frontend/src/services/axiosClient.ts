@@ -22,17 +22,16 @@ axiosClient.interceptors.request.use((config: any) => {
   const accessToken = AuthStore.getAccessToken();
   const csrfToken = AuthStore.getCsrfToken();
   
-
+  console.log("Request URL:", config.url);
+  console.log("requiresAuth:", config.requiresAuth);
+  console.log("AccessToken in AuthStore:", accessToken);
   if (config.requiresAuth) {
     
     if (accessToken) {
-      console.log("Attaching access token to request:", accessToken);
+      // console.log("Attaching access token to request:", accessToken);
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
-    if (csrfToken) {
-      console.log("Attaching CSRF token to request:", csrfToken);
-      config.headers["X-CSRF-Token"] = csrfToken;
-    }
+    
   }
 
   return config;
@@ -49,6 +48,8 @@ axiosClient.interceptors.response.use(
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      console.log("401 detected on:", originalRequest.url);
+  console.log("Original request headers:", originalRequest.headers);
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribers.push((token: string) => {
@@ -73,8 +74,9 @@ axiosClient.interceptors.response.use(
             withCredentials: true,
           }
         );
-
+        console.log("Refresh API response:", res.data);
         const newToken = res.data.accessToken;
+        console.log("Refreshed token:", newToken);
         sessionStorage.setItem("accessToken", newToken);
 
         if (res.data.csrfToken) {
@@ -87,6 +89,7 @@ axiosClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return axiosClient(originalRequest);
       } catch (err) {
+        console.error("Refresh failed:", err.response?.status, err.response?.data || err.message);
         sessionStorage.removeItem("accessToken");
         sessionStorage.removeItem("csrfToken");
         window.location.href = "/login";

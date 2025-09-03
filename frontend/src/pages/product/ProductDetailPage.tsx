@@ -11,7 +11,6 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<ProductDetailModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const { addToCartAndOpen } = useCart(); // 🔹 từ context
 

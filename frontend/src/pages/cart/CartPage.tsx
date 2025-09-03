@@ -193,8 +193,8 @@ const Cart = () => {
     const fetchCart = async () => {
       setLoading(true);
       try {
-        const data: Cart = await cartApi.getCart();
-        setCartItems(data.Items || []);
+        const response: Cart = await cartApi.getCart();
+        setCartItems(response.data.Items || []);
       } catch (error) {
         console.error("Lỗi lấy giỏ hàng:", error);
       } finally {

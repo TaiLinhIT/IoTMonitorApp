@@ -125,6 +125,14 @@ namespace IoTMonitorApp.API
                 // nếu deploy HTTPS thì để CookieSecurePolicy.Always
             });
 
+
+            builder.Services.AddDataProtection(); // nếu cần
+            builder.Services.AddCookiePolicy(options =>
+            {
+                options.CheckConsentNeeded = context => false; // tắt consent
+            });
+
+
             //CSRF
             builder.Services.AddAntiforgery(options =>
             {
@@ -136,7 +144,8 @@ namespace IoTMonitorApp.API
             // 8. Swagger
             builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();
+            var app = builder.Build(); // tạo app
+            //Sau đó chạy theo thứ tự middleware dưới đây
 
             // --- Pipeline ---
             if (app.Environment.IsDevelopment())
@@ -150,6 +159,8 @@ namespace IoTMonitorApp.API
 
             app.UseSession();          // ✅ phải trước Authentication
             //app.UseCsrfMiddleware();   // Nếu bạn có custom CSRF middleware
+            app.UseCookiePolicy(); // trước UseAuthentication
+
 
             app.UseAuthentication();   // JWT / Google
             app.UseAuthorization();
