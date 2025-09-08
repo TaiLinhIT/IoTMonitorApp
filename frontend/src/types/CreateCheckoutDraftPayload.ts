@@ -1,5 +1,5 @@
-import { CheckouDraftItem } from './CheckoutDraftItem';
-interface CreateCheckoutDraftPayload {
-    items: CheckouDraftItem[];
+import type { CheckoutDraftItem } from './CheckoutDraftItem';
+export interface CreateCheckoutDraftPayload {
+    items: CheckoutDraftItem[];
     totalPrice: number;
 }

@@ -1,7 +1,6 @@
 ﻿using IoTMonitorApp.API.Dto.Auth.Register;
 using IoTMonitorApp.API.IServices;
 using IoTMonitorApp.API.Models;
-using IoTMonitorApp.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,43 +14,52 @@ namespace IoTMonitorApp.API.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IJwtService _jwtService;
-        private readonly CsrfService _csrfService;
 
-        public AuthController(IAuthService authService, IJwtService jwtService, CsrfService csrfService)
+        public AuthController(IAuthService authService, IJwtService jwtService)
         {
             _authService = authService;
             _jwtService = jwtService;
-            _csrfService = csrfService;
         }
 
         // ---------------- Refresh token ----------------
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh()
         {
-            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
-                return Unauthorized(new { message = "Missing refresh token" });
-
-
-
-            var result = await _authService.RefreshTokenAsync(refreshToken);
-            if (result == null)
-                return Unauthorized(new { message = "Invalid token" });
-
-            // Cập nhật lại cookie refresh token mới (HttpOnly)
-            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+            try
             {
-                HttpOnly = true,
-                Secure = false, // chỉ gửi qua HTTPS
-                SameSite = SameSiteMode.None, // QUAN TRỌNG: cho phép cross-site
-                Path = "/", // bắt buộc
-                Expires = result.Expiry,
-            });
+                if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+                    return Unauthorized(new { message = "Missing refresh token" });
 
-            return Ok(new
+
+
+                var result = await _authService.RefreshTokenAsync(refreshToken);
+                if (result == null)
+                    return Unauthorized(new { message = "Invalid token" });
+
+                // Cập nhật lại cookie refresh token mới (HttpOnly)
+                Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false, // chỉ gửi qua HTTPS
+                    SameSite = SameSiteMode.None, // QUAN TRỌNG: cho phép cross-site
+                    Path = "/", // bắt buộc
+                    Expires = result.Expiry,
+                    IsEssential = true
+
+                });
+
+                return Ok(new
+                {
+                    accessToken = result.Token,
+                    //csrfToken = result.CsrfToken
+                });
+
+            }
+            catch (Exception ex)
             {
-                accessToken = result.Token,
-                //csrfToken = result.CsrfToken
-            });
+
+                return BadRequest(ex.Message);
+            }
         }
 
         // ---------------- Login với email + password ----------------
@@ -70,7 +78,8 @@ namespace IoTMonitorApp.API.Controllers
                     Secure = false, // dev HTTP thì false, deploy HTTPS thì true
                     SameSite = SameSiteMode.None,
                     Path = "/",
-                    Expires = DateTime.UtcNow.AddDays(7)
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    IsEssential = true
                 });
 
                 return Ok(new
@@ -114,8 +123,8 @@ namespace IoTMonitorApp.API.Controllers
                 Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    Secure = false,//Nếu chạy http://localhost
+                    SameSite = SameSiteMode.Lax,
                     Expires = DateTime.UtcNow.AddDays(7)
                 });
 

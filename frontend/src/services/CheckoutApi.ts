@@ -1,8 +1,8 @@
-import axiosClient from "./axiosClient";
-import type { CreateCheckoutDraftPayload } from "../types/Checkout";
+import privateApi from "./axiosPrivate";
+import type { CreateCheckoutDraftPayload } from "../types/CreateCheckoutDraftPayload";
 
 const checkoutApi = {
   createDraft: (payload: CreateCheckoutDraftPayload) =>
-    axiosClient.post("/CheckoutDraft/create", payload),
+    privateApi.post("/CheckoutDraft/create", payload),
 };
 export default checkoutApi;

@@ -16,19 +16,19 @@ namespace IoTMonitorApp.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. Cấu hình CORS cho FE http://localhost:5173
+            // 1. CORS cho FE (http://localhost:5173)
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowLocalhost5173", policy =>
+                options.AddPolicy("AllowFrontend", policy =>
                 {
                     policy.WithOrigins("http://localhost:5173")
                           .AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowCredentials(); // ✅ quan trọng để cookie gửi đi
+                          .AllowCredentials(); // ✅ cần cho cookie
                 });
             });
 
-            // 2. Controllers + JSON config
+            // 2. Controllers
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
@@ -57,9 +57,7 @@ namespace IoTMonitorApp.API
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["Authentication:Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Authentication:Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(builder.Configuration["Authentication:Jwt:Key"])
-                    )
+                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
                 };
 
                 options.Events = new JwtBearerEvents
@@ -71,9 +69,6 @@ namespace IoTMonitorApp.API
                     }
                 };
             })
-
-
-
             .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
             {
                 options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
@@ -94,7 +89,6 @@ namespace IoTMonitorApp.API
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<ICheckoutDraftService, CheckoutDraftService>();
             builder.Services.AddScoped<IJwtService, JwtService>();
-            builder.Services.AddScoped<CsrfService>();
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -111,41 +105,34 @@ namespace IoTMonitorApp.API
                 return new MongoClient(settings.ConnectionString);
             });
 
-            // 7. Session (bắt buộc cho CSRF Middleware)
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddSession(options =>
-            {
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
-                options.IdleTimeout = TimeSpan.FromMinutes(30);
+            // ❌ 7. Session (KHÔNG CẦN nếu bạn chỉ dùng JWT + cookie refresh token)
+            //builder.Services.AddDistributedMemoryCache();
+            //builder.Services.AddSession(options =>
+            //{
+            //    options.Cookie.HttpOnly = true;
+            //    options.Cookie.IsEssential = true;
+            //    options.IdleTimeout = TimeSpan.FromMinutes(30);
+            //    options.Cookie.SameSite = SameSiteMode.None;
+            //    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+            //});
 
-                // ✅ dùng SecurePolicy thay vì Secure
-                options.Cookie.SameSite = SameSiteMode.None;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-                // nếu deploy HTTPS thì để CookieSecurePolicy.Always
-            });
+            // ❌ CookiePolicy (KHÔNG CẦN, vì bạn đã set cookie thủ công trong controller)
+            //builder.Services.AddDataProtection();
+            //builder.Services.AddCookiePolicy(options =>
+            //{
+            //    options.CheckConsentNeeded = context => false;
+            //});
 
-
-            builder.Services.AddDataProtection(); // nếu cần
-            builder.Services.AddCookiePolicy(options =>
-            {
-                options.CheckConsentNeeded = context => false; // tắt consent
-            });
-
-
-            //CSRF
-            builder.Services.AddAntiforgery(options =>
-            {
-                options.HeaderName = "X-CSRF-Token"; // 👈 trùng với frontend
-            });
-
-
+            // ❌ CSRF (KHÔNG CẦN nếu chỉ dùng JWT, không phải form POST truyền thống)
+            //builder.Services.AddAntiforgery(options =>
+            //{
+            //    options.HeaderName = "X-CSRF-Token";
+            //});
 
             // 8. Swagger
             builder.Services.AddSwaggerGen();
 
-            var app = builder.Build(); // tạo app
-            //Sau đó chạy theo thứ tự middleware dưới đây
+            var app = builder.Build();
 
             // --- Pipeline ---
             if (app.Environment.IsDevelopment())
@@ -155,14 +142,16 @@ namespace IoTMonitorApp.API
             }
 
             app.UseHttpsRedirection();
-            app.UseCors("AllowLocalhost5173");
 
-            app.UseSession();          // ✅ phải trước Authentication
-            //app.UseCsrfMiddleware();   // Nếu bạn có custom CSRF middleware
-            app.UseCookiePolicy(); // trước UseAuthentication
+            app.UseCors("AllowFrontend"); // ✅ cookie CORS phải đứng trước Auth
 
+            // ❌ Session không cần
+            //app.UseSession();
 
-            app.UseAuthentication();   // JWT / Google
+            // ❌ CookiePolicy không cần
+            //app.UseCookiePolicy();
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

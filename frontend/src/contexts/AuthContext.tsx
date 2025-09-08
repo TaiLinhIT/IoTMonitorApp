@@ -2,12 +2,11 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { AuthStore } from "./AuthStore";
+import { setAuthUpdateHandler } from "../services/axiosPrivate";
 
 type AuthContextType = {
   accessToken: string | null;
-  csrfToken: string | null;
-  role: string | null;
-  setAuth: (data: { accessToken: string; csrfToken: string; role: string }) => void;
+  setAuth: (data: { accessToken: string}) => void;
   clearAuth: () => void;
 };
 
@@ -15,61 +14,50 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [csrfToken, setCsrfToken] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
 
-  const setAuth = ({ accessToken, csrfToken, role }: { accessToken: string; csrfToken: string; role: string }) => {
+  const setAuth = ({ accessToken }: { accessToken: string}) => {
     setAccessToken(accessToken);
-    setCsrfToken(csrfToken);
-    setRole(role);
-
-    // đồng bộ ra ngoài (axiosClient hoặc store khác)
-    AuthStore.setAuth({ accessToken, csrfToken, role });
+    AuthStore.setAuth({ accessToken});
   };
 
   const clearAuth = () => {
     setAccessToken(null);
-    setCsrfToken(null);
-    setRole(null);
-
     AuthStore.clearAuth();
   };
 
-  // 🔑 Khi reload -> gọi /Auth/refresh để lấy token mới
+  // ✅ Refresh 1 lần khi app load
   useEffect(() => {
     const tryRefresh = async () => {
       try {
-        console.log("🔄 Đang thử refresh token...");
-
         const res = await axios.post(
           "http://localhost:5039/api/Auth/refresh",
           {},
-          {
-            
-            withCredentials: true, // để gửi cookie refresh token
-          }
+          { withCredentials: true }
         );
 
-        const { accessToken } = res.data;
-
-        setAuth({
-          accessToken,
-        });
-
-        
-
-        console.log("✅ Refresh thành công, accessToken mới:", accessToken);
+        const { accessToken} = res.data;
+        setAuth({ accessToken});
       } catch (err) {
-        console.warn("❌ Refresh thất bại, buộc logout:", err);
         clearAuth();
       }
     };
 
     tryRefresh();
-  }, []); // chỉ chạy khi app load lần đầu
+  }, []);
+
+  // ✅ Cho interceptor biết cách cập nhật context
+  useEffect(() => {
+    setAuthUpdateHandler((data) => {
+      if (data.accessToken) {
+        setAuth(data);
+      } else {
+        clearAuth();
+      }
+    });
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ accessToken, csrfToken, role, setAuth, clearAuth }}>
+    <AuthContext.Provider value={{ accessToken,  setAuth, clearAuth }}>
       {children}
     </AuthContext.Provider>
   );

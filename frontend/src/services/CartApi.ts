@@ -1,32 +1,29 @@
-import axiosClient from "./axiosClient";
+// import publicApi from "./axiosPublic";
+import privateApi from "./axiosPrivate";
 import type { Cart } from "../types/Cart";
 
 
 const cartApi = {
   getCart: (): Promise<Cart> =>
-    axiosClient.get("/Cart", { requiresAuth: true }),
+    privateApi.get("/Cart"),
 
   addItem: (productId: string, quantity: number): Promise<Cart> =>
-    axiosClient.post(
+    privateApi.post(
       "/Cart/add",
-      { productId, quantity },
-      { requiresAuth: true }
+      { productId, quantity }
     ),
 
   updateItem: (productId: string, quantity: number): Promise<Cart> =>
-    axiosClient.put(
+    privateApi.put(
       "/Cart/update",
-      { productId, quantity },
-      { requiresAuth: true }
+      { productId, quantity }
     ),
 
   removeItem: (productId: string): Promise<Cart> =>
-    axiosClient.delete(`/Cart/remove?productId=${productId}`, {
-      requiresAuth: true,
-    }),
+    privateApi.delete(`/Cart/remove?productId=${productId}`),
 
   clear: (): Promise<boolean> =>
-    axiosClient.delete("/cart/clear", { requiresAuth: true }),
+    privateApi.delete("/cart/clear"),
 };
 
 

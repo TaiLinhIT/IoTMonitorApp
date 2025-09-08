@@ -6,7 +6,7 @@ import Login from "../pages/auth/LoginPage";
 import Register from "../pages/auth/RegisterPage";
 import ProductList from "../pages/product/ProductListPage";
 import ProductDetail from "../pages/product/ProductDetailPage";
-import Cart from "../pages/cart/CartPage";
+import CartPage from "../pages/cart/CartPage";
 import Checkout from "../pages/checkout/CheckoutPage";
 import Forbidden from "../pages/error/ForbiddenPage";
 import PageNotFound from "../pages/error/PageNotFoundPage";
@@ -61,7 +61,7 @@ export const routes = [
           <ErrorBoundary>
             <PrivateRoute>
               <RoleRoute allowedRoles={["Admin", "User"]}>
-                <Cart />
+                <CartPage />
               </RoleRoute>
             </PrivateRoute>
           </ErrorBoundary>

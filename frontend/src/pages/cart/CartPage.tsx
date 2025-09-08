@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import cartApi from "../../services/CartApi";
 import orderApi from "../../services/OrderApi";
-import type { Cart } from "../../types/Cart";
+import type { Cart as CartType } from "../../types/Cart";
 import type { CartItem } from "../../types/CartItem";
 import TrashIcon from "/assets/icons/trash.svg";
 import { motion, AnimatePresence } from "framer-motion";
@@ -179,7 +179,7 @@ const CartItemRow = memo(
 );
 
 /* -------------------- Cart -------------------- */
-const Cart = () => {
+const CartPage = () => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -432,4 +432,4 @@ const Cart = () => {
   );
 };
 
-export default Cart;
+export default CartPage;
