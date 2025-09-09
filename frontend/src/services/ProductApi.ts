@@ -1,11 +1,13 @@
 import publicApi from "./axiosPublic";
 import privateApi from "./axiosPrivate";
 import type { Product } from "../types/Product";
+// import type { AxiosResponse } from "axios";
 
 const productApi = {
   //public endpoints
-  getAll: (): Promise<Product[]> =>{
-    return publicApi.get("/Products");
+  getAll:async (): Promise<Product[]> =>{
+    const response = await publicApi.get<Product[]>("/Products");
+    return response.data;
   },
   getById: (id: number): Promise<Product> => {
     return publicApi.get(`/Products/${id}`);

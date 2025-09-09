@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ProductDetailApi from "../../services/ProductDetailApi";
 import type { ProductDetail as ProductDetailModel } from "../../types/ProductDetail";
@@ -18,10 +18,11 @@ const ProductDetail = () => {
     if (!id) return;
     ProductDetailApi.getById(id)
       .then((response) => {
+        const productData = response;
 
-        setProduct(response.data);
-        if (data?.ProductUrl?.length > 0) {
-          setSelectedImage(data.ProductUrl[0]);
+        setProduct(productData);
+        if (productData?.ProductUrl?.length > 0) {
+          setSelectedImage(productData.ProductUrl[0]);
         }
       })
       .catch((err) => console.error(err))

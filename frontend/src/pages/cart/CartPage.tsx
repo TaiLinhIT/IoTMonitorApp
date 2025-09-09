@@ -1,7 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, memo } from "react";
 import cartApi from "../../services/CartApi";
-import orderApi from "../../services/OrderApi";
-import type { Cart as CartType } from "../../types/Cart";
 import type { CartItem } from "../../types/CartItem";
 import TrashIcon from "/assets/icons/trash.svg";
 import { motion, AnimatePresence } from "framer-motion";
@@ -51,7 +49,7 @@ const CheckoutModal = ({
         {/* Phương thức thanh toán */}
         <div className="mb-4">
           <label className="block font-medium">Phương thức thanh toán</label>
-          <select className="w-full border rounded-lg p-2 mt-1">
+          <select aria-label="Pay method" className="w-full border rounded-lg p-2 mt-1">
             <option>Thanh toán khi nhận hàng</option>
             <option>Chuyển khoản ngân hàng</option>
             <option>Ví MoMo</option>
@@ -115,7 +113,7 @@ const CartItemRow = memo(
         exit={{ opacity: 0, x: -100 }}
         transition={{ duration: 0.3 }}
       >
-        <input
+        <input title="check"
           type="checkbox"
           className="w-5 h-5 mr-4 pointer-events-none"
           checked={selected}
@@ -184,11 +182,10 @@ const CartPage = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectAll, setSelectAll] = useState<boolean>(false);
+  const [isCheckingOut] = useState(false);
 
-  // Lấy giỏ hàng
+  // Fetch cart items
   useEffect(() => {
     const fetchCart = async () => {
       setLoading(true);
@@ -261,12 +258,11 @@ const CartPage = () => {
 
   const handleCheckout = async () => {
     if (selectedItems.length === 0) return;
-  
+
     const itemsToOrder = cartItems.filter((item) =>
       selectedItems.includes(item.ProductId)
     );
-  
-    // Payload KHÔNG có userId
+
     const payload = {
       totalPrice: totalPrice,
       items: itemsToOrder.map((item) => ({
@@ -275,49 +271,13 @@ const CartPage = () => {
         price: item.Price,
       })),
     };
-  
+
     try {
-      const response = await checkoutApi.createDraft(payload);
-  
+      await checkoutApi.createDraft(payload);
       navigate(`/checkout`);
     } catch (error) {
       console.error("Tạo CheckoutDraft thất bại:", error);
       alert("Không thể tiến hành thanh toán. Vui lòng thử lại.");
-    }
-  };
-  
-  // Người dùng xác nhận trong modal => gọi API
-  const handleConfirmOrder = async () => {
-    try {
-      setIsCheckingOut(true);
-
-      const itemsToOrder = cartItems.filter((item) =>
-        selectedItems.includes(item.ProductId)
-      );
-
-      const payload = {
-        userId: 1,
-        items: itemsToOrder.map((item) => ({
-          productId: item.ProductId,
-          quantity: item.Quantity,
-        })),
-      };
-
-      const order = await orderApi.create(payload);
-
-      alert("Thanh toán thành công! Mã đơn #" + order.id);
-
-      setCartItems((prev) =>
-        prev.filter((item) => !selectedItems.includes(item.ProductId))
-      );
-      setSelectedItems([]);
-      setSelectAll(false);
-    } catch (error) {
-      console.error("Lỗi khi thanh toán:", error);
-      alert("Thanh toán thất bại. Vui lòng thử lại.");
-    } finally {
-      setIsCheckingOut(false);
-      setIsModalOpen(false);
     }
   };
 
@@ -331,10 +291,7 @@ const CartPage = () => {
     return (
       <div className="space-y-4 p-4 lg:p-10">
         {[...Array(3)].map((_, idx) => (
-          <div
-            key={idx}
-            className="h-28 bg-gray-200 rounded-xl animate-pulse"
-          ></div>
+          <div key={idx} className="h-28 bg-gray-200 rounded-xl animate-pulse"></div>
         ))}
       </div>
     );
@@ -348,7 +305,7 @@ const CartPage = () => {
       {/* Danh sách sản phẩm */}
       <div className="flex-1 space-y-4">
         <div className="flex items-center mb-4">
-          <input
+          <input title="check"
             type="checkbox"
             className="w-5 h-5 mr-2"
             checked={selectAll}

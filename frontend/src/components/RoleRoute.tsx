@@ -1,9 +1,9 @@
 // src/components/RoleRoute.tsx
-import React from "react";
+
 import { Navigate } from "react-router-dom";
 
 interface RoleRouteProps {
-  children: JSX.Element;
+  children: React.ReactNode;
   allowedRoles: string[];
 }
 

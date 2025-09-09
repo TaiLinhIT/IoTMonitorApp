@@ -3,7 +3,7 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { AuthStore } from "../contexts/AuthStore";
 
-const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = AuthStore.getAccessToken() !== null;
 
   if (!isAuthenticated) {
@@ -11,7 +11,7 @@ const PrivateRoute = ({ children }: { children: JSX.Element }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <>{children}</>
 };
 
 export default PrivateRoute;

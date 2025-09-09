@@ -1,5 +1,5 @@
 // main.tsx
-import { StrictMode } from "react";
+// import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext"; 
@@ -12,7 +12,7 @@ import App from "./App.tsx";
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  // <StrictMode>
     <GoogleOAuthProvider clientId={clientId}>
       <CartProvider>
         <AuthProvider>    
@@ -20,5 +20,5 @@ createRoot(document.getElementById("root")!).render(
         </AuthProvider>
       </CartProvider>
     </GoogleOAuthProvider>
-  </StrictMode>
+  //</StrictMode> 
 );

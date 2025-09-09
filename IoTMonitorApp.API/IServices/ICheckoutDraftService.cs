@@ -6,6 +6,6 @@ namespace IoTMonitorApp.API.IServices
     public interface ICheckoutDraftService
     {
         Task<CheckoutDraft> CreateDraftAsync(CheckoutDraftCreateDto dto, Guid UserId);
-        Task<CheckoutDraft> GetDraftByIdAsync(int draftId);
+
     }
 }

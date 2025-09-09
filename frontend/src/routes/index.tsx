@@ -29,14 +29,20 @@ export const routes = [
   {
     element: <MainLayout />,
     children: [
-      { path: PATHS.home, element: <Home />, requiresAuth: false },
+      {
+        path: PATHS.home,
+        element: (
+          <ErrorBoundary>
+            <Home />
+          </ErrorBoundary>
+        ),
+        requiresAuth: false,
+      },
       {
         path: PATHS.products,
         element: (
           <ErrorBoundary>
-            <RoleRoute allowedRoles={["Admin", "User"]}>
-              <ProductList />
-            </RoleRoute>
+            <ProductList />
           </ErrorBoundary>
         ),
         requiresAuth: false,
@@ -46,9 +52,7 @@ export const routes = [
         element: (
           <ErrorBoundary>
             <PrivateRoute>
-              <RoleRoute allowedRoles={["Admin", "User"]}>
-                <ProductDetail />
-              </RoleRoute>
+              <ProductDetail />
             </PrivateRoute>
           </ErrorBoundary>
         ),

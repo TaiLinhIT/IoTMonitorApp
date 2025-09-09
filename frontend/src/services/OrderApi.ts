@@ -1,5 +1,5 @@
 import privateApi from "./axiosPrivate";
-import type { Order , OrderCreate, OrderItem } from "../types/Order";
+import type { Order , OrderCreate } from "../types/Order";
 
 const orderApi = {
   getAll: (): Promise<Order[]> => {

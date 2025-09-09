@@ -2,8 +2,9 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authApi from "../../services/AuthApi";
-import { GoogleLogin } from "@react-oauth/google";
-import { useAuth } from "../../contexts/AuthContext"; //import useAuth
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { useAuth } from "../../hooks/useAuth"; //import useAuth
+import axios from "axios";
 
 
 
@@ -27,18 +28,22 @@ const Login = () => {
       });
       
       navigate("/products"); 
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed");
+    } catch (err: unknown) {
+      if(axios.isAxiosError(err)){
+        setError(err.response?.data?.message || "Login failed");
+      }else{
+        setError("Login failed");
+      }
     }
   };
 
   // Login bằng Google OAuth
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     const idToken = credentialResponse.credential;
     if (!idToken) return;
 
     try {
-      const res = await authApi.loginGoogle(idToken);
+      // const res = await authApi.loginGoogle(idToken);
       
       navigate("/products");
     } catch (err) {

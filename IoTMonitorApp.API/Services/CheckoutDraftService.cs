@@ -20,7 +20,7 @@ namespace IoTMonitorApp.API.Services
             // 1. Tạo draft
             var draft = new CheckoutDraft
             {
-                UserId = UserId,
+                Id = UserId,
                 TotalPrice = dto.TotalPrice,
                 Status = "Draft",
                 CreatedAt = DateTime.UtcNow
@@ -49,9 +49,6 @@ namespace IoTMonitorApp.API.Services
             return draft;
         }
 
-        public async Task<CheckoutDraft> GetDraftByIdAsync(int draftId)
-        {
-            return await _context.CheckoutDrafts.FirstOrDefaultAsync(d => d.Id == draftId);
-        }
+
     }
 }

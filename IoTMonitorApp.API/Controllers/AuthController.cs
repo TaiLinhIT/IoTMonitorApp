@@ -41,7 +41,7 @@ namespace IoTMonitorApp.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = false, // chỉ gửi qua HTTPS
-                    SameSite = SameSiteMode.None, // QUAN TRỌNG: cho phép cross-site
+                    SameSite = SameSiteMode.Strict, // QUAN TRỌNG: cho phép cross-site
                     Path = "/", // bắt buộc
                     Expires = result.Expiry,
                     IsEssential = true
@@ -76,7 +76,7 @@ namespace IoTMonitorApp.API.Controllers
                 {
                     HttpOnly = true,
                     Secure = false, // dev HTTP thì false, deploy HTTPS thì true
-                    SameSite = SameSiteMode.None,
+                    SameSite = SameSiteMode.Strict,
                     Path = "/",
                     Expires = DateTime.UtcNow.AddDays(7),
                     IsEssential = true

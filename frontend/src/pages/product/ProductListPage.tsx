@@ -14,7 +14,7 @@ const ProductList: React.FC = () => {
     productApi
       .getAll()
       .then((response) => {
-        setProducts(response.data);
+        setProducts(response);
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));

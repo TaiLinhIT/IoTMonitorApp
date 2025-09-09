@@ -33,9 +33,7 @@ namespace IoTMonitorApp.API.Controllers
         [HttpGet("{draftId}")]
         public async Task<IActionResult> Get(int draftId)
         {
-            var draft = await _checkoutDraftService.GetDraftByIdAsync(draftId);
-            if (draft == null) return NotFound();
-            return Ok(draft);
+            return Ok(new { id = draftId });
         }
     }
 }

@@ -18,7 +18,7 @@ namespace IoTMonitorApp.API.Services
         {
             var draft = new CheckoutDraft
             {
-                UserId = userId,
+                Id = userId,
                 TotalPrice = totalPrice,
                 CreatedAt = DateTime.UtcNow,
                 Status = "Draft"
@@ -43,7 +43,7 @@ namespace IoTMonitorApp.API.Services
             return await _context.CheckoutDrafts.FindAsync(draftId);
         }
 
-        public async Task<List<CheckoutDraftItem>> GetDraftItemsAsync(int draftId)
+        public async Task<List<CheckoutDraftItem>> GetDraftItemsAsync(Guid draftId)
         {
             return await _context.CheckoutDraftItems
                                  .Where(i => i.CheckoutDraftId == draftId)
@@ -59,6 +59,12 @@ namespace IoTMonitorApp.API.Services
             _context.CheckoutDrafts.Update(draft);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<CheckoutDraftItem>> GetDraftByUserId(Guid userId)
+        {
+            var draft = await _context.CheckoutDraftItems.Where(x => x.CheckoutDraftId == userId).ToListAsync();
+            return draft;
         }
     }
 }

@@ -1,5 +1,4 @@
 // src/Features/Common/pages/Forbidden.tsx
-import React from "react";
 import { Link } from "react-router-dom";
 
 const Forbidden = () => {

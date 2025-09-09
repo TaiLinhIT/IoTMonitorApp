@@ -6,9 +6,10 @@ import MiniCart from "../cart/MiniCart"; // thêm MiniCart
 
 
 const Header = () => {
-  const { cartCount, isMiniCartOpen, closeMiniCart } = useCart();
+  const { cartCount } = useCart();
   
-  const [ setIsCartOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
 
   return (
     <>
@@ -41,16 +42,20 @@ const Header = () => {
 
           {/* Icons */}
           <div className="flex items-center space-x-6">
-            <button className="hover:text-yellow-300">
-              <Bell className="h-6 w-6" />
-            </button>
-            <button className="hover:text-yellow-300">
-              <User className="h-6 w-6" />
-            </button>
+          <button type="button" className="hover:text-yellow-300">
+            <Bell className="h-6 w-6" />
+            <span className="sr-only">Thông báo</span>
+          </button>
+
+          <button type="button" className="hover:text-yellow-300">
+            <User className="h-6 w-6" />
+            <span className="sr-only">Tài khoản</span>
+          </button>
+
 
             {/* Cart */}
             <div className="relative">
-              <button onClick={() => setIsCartOpen(true)}>
+              <button type="button"  aria-label="Giỏ hàng"  onClick={() => setIsCartOpen(true)}>
                 <ShoppingCart className="h-6 w-6 cursor-pointer hover:text-yellow-300" />
               </button>
 
@@ -89,7 +94,8 @@ const Header = () => {
       </header>
 
       {/* MiniCart Drawer */}
-      <MiniCart isOpen={isMiniCartOpen} onClose={closeMiniCart} />
+      
+      <MiniCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 };

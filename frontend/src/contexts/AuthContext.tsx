@@ -1,31 +1,26 @@
-// src/context/AuthContext.tsx
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { AuthStore } from "./AuthStore";
 import { setAuthUpdateHandler } from "../services/axiosPrivate";
-
-type AuthContextType = {
-  accessToken: string | null;
-  setAuth: (data: { accessToken: string}) => void;
-  clearAuth: () => void;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext } from "./AuthContextBase";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
-  const setAuth = ({ accessToken }: { accessToken: string}) => {
+  const setAuth = ({ accessToken }: { accessToken: string }) => {
+    // cập nhật AuthStore sync trước
+    AuthStore.setAuth({ accessToken });
+    // rồi mới update state
     setAccessToken(accessToken);
-    AuthStore.setAuth({ accessToken});
   };
 
   const clearAuth = () => {
-    setAccessToken(null);
     AuthStore.clearAuth();
+    setAccessToken(null);
   };
 
-  // ✅ Refresh 1 lần khi app load
+  // 🔄 Khi app load lại, thử refresh
   useEffect(() => {
     const tryRefresh = async () => {
       try {
@@ -34,37 +29,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           {},
           { withCredentials: true }
         );
+        const { accessToken } = res.data;
 
-        const { accessToken} = res.data;
-        setAuth({ accessToken});
+        // 🟢 update store & state
+        setAuth({ accessToken });
+
+        // 🟢 đồng bộ ngược lại qua callback (nếu đã set)
+        // trick: gọi lại chính callback mình đã set
+        setAuthUpdateHandler((token: string) => {
+          if (!token || typeof token !== "string") {
+            clearAuth();
+            return;
+          }
+          console.log("nó là cái này", token);
+          setAuth({ accessToken: token });
+        });
       } catch (err) {
+        console.error("[AuthProvider] ❌ Refresh thất bại", err);
         clearAuth();
+      } finally {
+        setIsInitializing(false);
       }
     };
-
     tryRefresh();
   }, []);
 
-  // ✅ Cho interceptor biết cách cập nhật context
+  // 🟢 đăng ký callback sync từ axiosPrivate → AuthContext
   useEffect(() => {
-    setAuthUpdateHandler((data) => {
-      if (data.accessToken) {
-        setAuth(data);
-      } else {
+    setAuthUpdateHandler((token: string) => {
+      if (!token || typeof token !== "string") {
         clearAuth();
+        return;
       }
+      console.log("nó là cái này", token);
+      setAuth({ accessToken: token });
     });
   }, []);
 
+  if (isInitializing) {
+    return <div>Đang khởi tạo...</div>; // block UI khi chưa refresh xong
+  }
+
   return (
-    <AuthContext.Provider value={{ accessToken,  setAuth, clearAuth }}>
+    <AuthContext.Provider
+      value={{ accessToken, setAuth, clearAuth, isInitializing }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  return ctx;
 };
