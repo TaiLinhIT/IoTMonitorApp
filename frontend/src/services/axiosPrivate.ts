@@ -19,8 +19,8 @@ function onRefreshed(token: string) {
 
 const privateApi = axios.create({
   baseURL: "http://localhost:5039/api",
-  headers: { "Content-Type": "application/json" },
-  withCredentials: true,
+  headers: { "Content-Type": "application/json" }
+  // withCredentials: true,
 });
 
 // 🟢 Request interceptor

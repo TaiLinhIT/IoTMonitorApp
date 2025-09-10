@@ -13,7 +13,7 @@ const AdminLayout = () => {
           <ul className="space-y-3">
             <li>
               <Link
-                to="/dashboard"
+                to="/admin/dashboard"
                 className="flex items-center gap-2 p-2 rounded hover:bg-blue-50 text-gray-700"
               >
                 <LayoutDashboard size={18} />
@@ -22,7 +22,7 @@ const AdminLayout = () => {
             </li>
             <li>
               <Link
-                to="/products"
+                to="/admin/products"
                 className="flex items-center gap-2 p-2 rounded hover:bg-blue-50 text-gray-700"
               >
                 <ShoppingBag size={18} />
@@ -31,7 +31,7 @@ const AdminLayout = () => {
             </li>
             <li>
               <Link
-                to="/users"
+                to="/admin/users"
                 className="flex items-center gap-2 p-2 rounded hover:bg-blue-50 text-gray-700"
               >
                 <Users size={18} />

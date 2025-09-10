@@ -1,30 +1,34 @@
-import publicApi from "./axiosPublic";
+import { publicApiWithoutCookie } from "./axiosPublic";
 import privateApi from "./axiosPrivate";
 import type { Product } from "../types/Product";
-// import type { AxiosResponse } from "axios";
 
 const productApi = {
-  //public endpoints
-  getAll:async (): Promise<Product[]> =>{
-    const response = await publicApi.get<Product[]>("/Products");
+  // Public endpoints
+  getAll: async (): Promise<Product[]> => {
+    const response = await publicApiWithoutCookie.get<Product[]>("/Products");
     return response.data;
   },
-  getById: (id: number): Promise<Product> => {
-    return publicApi.get(`/Products/${id}`);
+  getById: async (id: string): Promise<Product> => {
+    const response = await publicApiWithoutCookie.get<Product>(`/Products/${id}`);
+    return response.data;
   },
 
-  //Private endpoints
-  create:(data: Product):Promise<Product> =>{
-    return privateApi.post("/Products",data);
+  // Private endpoints (dùng FormData để hỗ trợ upload ảnh)
+  create: async (data: FormData): Promise<Product> => {
+    const response = await privateApi.post<Product>("/Products", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
   },
-  update:(id:string, data:Partial<Product>):Promise<Product> =>{
-    return privateApi.put(`/Products/${id}`, data);
+  update: async (id: string, data: FormData): Promise<Product> => {
+    const response = await privateApi.put<Product>(`/Products/${id}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
   },
-  delete:(id:number):Promise<void> =>{
-    return privateApi.delete(`/Products/${id}`);
+  delete: async (id: string): Promise<void> => {
+    await privateApi.delete(`/Products/${id}`);
   },
-
 };
 
 export default productApi;
-

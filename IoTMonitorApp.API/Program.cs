@@ -88,6 +88,7 @@ namespace IoTMonitorApp.API
             builder.Services.AddScoped<IShipmentService, ShipmentService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<ICheckoutDraftService, CheckoutDraftService>();
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IJwtService, JwtService>();
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

@@ -1,7 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { PATHS } from "./paths";
+import { ROLES } from "../constants/roles";
+
 import Home from "../pages/home/HomePage";
 import Dashboard from "../pages/dashboard/DashboardPage";
+import ProductManager from "../pages/admin/product/ProductManager";
 import Login from "../pages/auth/LoginPage";
 import Register from "../pages/auth/RegisterPage";
 import ProductList from "../pages/product/ProductListPage";
@@ -10,22 +13,22 @@ import CartPage from "../pages/cart/CartPage";
 import Checkout from "../pages/checkout/CheckoutPage";
 import Forbidden from "../pages/error/ForbiddenPage";
 import PageNotFound from "../pages/error/PageNotFoundPage";
+
 import PrivateRoute from "../components/PrivateRoute";
 import RoleRoute from "../components/RoleRoute";
 import ErrorBoundary from "../components/ErrorBoundary";
-import AdminLayout from "../layouts/AdminLayout";
 
-// 🆕 Layout
 import MainLayout from "../layouts/MainLayout";
+import AdminLayout from "../layouts/AdminLayout";
 
 export const routes = [
   { path: "/", element: <Navigate to={PATHS.home} replace /> },
 
-  // Auth routes (không cần layout)
-  { path: PATHS.login, element: <Login />, requiresAuth: false },
-  { path: PATHS.register, element: <Register />, requiresAuth: false },
+  // Auth
+  { path: PATHS.login, element: <Login /> },
+  { path: PATHS.register, element: <Register /> },
 
-  // User routes
+  // User
   {
     element: <MainLayout />,
     children: [
@@ -36,7 +39,6 @@ export const routes = [
             <Home />
           </ErrorBoundary>
         ),
-        requiresAuth: false,
       },
       {
         path: PATHS.products,
@@ -45,69 +47,103 @@ export const routes = [
             <ProductList />
           </ErrorBoundary>
         ),
-        requiresAuth: false,
       },
       {
         path: PATHS.productDetail,
         element: (
           <ErrorBoundary>
             <PrivateRoute>
-              <ProductDetail />
+              <RoleRoute allowedRoles={[ROLES.USER, ROLES.ADMIN, ROLES.STAFF]}>
+                <ProductDetail />
+              </RoleRoute>
             </PrivateRoute>
           </ErrorBoundary>
         ),
-        requiresAuth: true,
-        // requiresCsrf: true, // 👈 nếu bạn muốn bắt buộc CSRF
       },
       {
         path: PATHS.carts,
         element: (
           <ErrorBoundary>
             <PrivateRoute>
-              <RoleRoute allowedRoles={["Admin", "User"]}>
+              <RoleRoute allowedRoles={[ROLES.USER]}>
                 <CartPage />
               </RoleRoute>
             </PrivateRoute>
           </ErrorBoundary>
         ),
-        requiresAuth: true,
-        // requiresCsrf: true,
       },
       {
         path: PATHS.checkout,
         element: (
           <ErrorBoundary>
             <PrivateRoute>
-              <RoleRoute allowedRoles={["Admin", "User"]}>
+              <RoleRoute allowedRoles={[ROLES.USER]}>
                 <Checkout />
               </RoleRoute>
             </PrivateRoute>
           </ErrorBoundary>
         ),
-        requiresAuth: true,
-        // requiresCsrf: true,
       },
     ],
   },
 
-  // Dashboard (layout khác nếu muốn)
+  // Admin & Staff dashboard
   {
-    path: PATHS.dashboard,
+    path: "/admin",
     element: (
       <PrivateRoute>
-        <RoleRoute allowedRoles={["Admin"]}>
+        {/* <RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.STAFF]}> */}
           <AdminLayout />
+        {/* </RoleRoute> */}
+      </PrivateRoute>
+    ),
+    children: [
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "products", element: <ProductManager /> },
+      { path: "users", element: <div>Quản lý User</div> },
+      { path: "reports", element: <div>Báo cáo</div> },
+    ],
+  }
+  ,
+  {
+    path: PATHS.admin.users,
+    element: (
+      <PrivateRoute>
+        <RoleRoute allowedRoles={[ROLES.ADMIN]}>
+          <AdminLayout>
+            <div>Quản lý User</div>
+          </AdminLayout>
         </RoleRoute>
       </PrivateRoute>
     ),
-    requiresAuth: true,
-    children: [
-      { index: true, element: <Dashboard />, requiresAuth: true },
-      { path: "users", element: <div>Quản lý user</div>, requiresAuth: true },
-    ],
   },
+  {
+    path: PATHS.admin.products,
+    element: (
+      <PrivateRoute>
+        {/* <RoleRoute allowedRoles={[ROLES.ADMIN, ROLES.STAFF]}> */}
+          <AdminLayout>
+            <ProductManager />
+          </AdminLayout>
+        {/* </RoleRoute> */}
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: PATHS.admin.reports,
+    element: (
+      <PrivateRoute>
+        {/* <RoleRoute allowedRoles={[ROLES.ADMIN]}> */}
+          <AdminLayout>
+            <div>Báo cáo</div>
+          </AdminLayout>
+        {/* </RoleRoute> */}
+      </PrivateRoute>
+    ),
+  },
+  
 
   // Error routes
-  { path: "/403", element: <Forbidden />, requiresAuth: false },
-  { path: "*", element: <PageNotFound />, requiresAuth: false },
+  { path: "/403", element: <Forbidden /> },
+  { path: "*", element: <PageNotFound /> },
 ];

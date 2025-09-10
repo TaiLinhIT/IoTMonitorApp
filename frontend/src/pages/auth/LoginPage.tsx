@@ -5,6 +5,7 @@ import authApi from "../../services/AuthApi";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { useAuth } from "../../hooks/useAuth"; //import useAuth
 import axios from "axios";
+import DashboardApi from "../../services/DashboardApi";
 
 
 
@@ -22,12 +23,12 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await authApi.login(email, password);
-      // console.log("Login response:", response.data);
+       console.log("Login response:", response.data);
       setAuth({
         accessToken: response.data.accessToken,
       });
-      
-      navigate("/products"); 
+      // navigate("/products");
+       handdleNavigate();
     } catch (err: unknown) {
       if(axios.isAxiosError(err)){
         setError(err.response?.data?.message || "Login failed");
@@ -36,7 +37,16 @@ const Login = () => {
       }
     }
   };
-
+  const handdleNavigate = ()=>{
+    try{
+      DashboardApi.getDashboardData();
+      navigate("/admin/dashboard");
+      
+    }catch(err){
+      console.error("Failed to load dashboard data:", err);
+      navigate("/products");
+    }
+  }
   // Login bằng Google OAuth
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     const idToken = credentialResponse.credential;
